@@ -25,7 +25,7 @@ namespace capa_datos.Controllers
         //El READ
         [HttpGet]
         [Route("read/{id?}")]
-        public async Task<ActionResult<List<Dictionary<string, object>>>> Read(int? id)
+        public async Task<ActionResult> Read(int? id)
         {
             List<Dictionary<string, object>> respuesta = new List<Dictionary<string, object>>();
             try
@@ -56,7 +56,7 @@ namespace capa_datos.Controllers
 
         [HttpPost]
         [Route("create")]
-        public async Task<ActionResult<Dictionary<string, object>>> Create([FromBody] Producto body)
+        public async Task<ActionResult> Create([FromBody] Producto body)
         {
             int filasAfectadas;
             var datos = body.DevolverDiccionario();
