@@ -16,10 +16,10 @@ namespace capa_datos.Controllers
     [Route("productos")]
     public class ProductosController : ControllerBase
     {
-        private Conexion conexion;
+        private Conexion Conexion;
         public ProductosController(IConfiguration configuration)
         {
-            this.conexion = new Conexion(configuration);
+            this.Conexion = new Conexion(configuration);
         }
 
         //El READ
@@ -44,9 +44,9 @@ namespace capa_datos.Controllers
                     {
                         comando.CommandText = consulta;
                     }
-                    respuesta = await conexion.EjecutarConsulta(comando);
+                    respuesta = await Conexion.EjecutarConsulta(comando);
                 }
-                return respuesta.Count > 0 ? StatusCode(200, respuesta) : StatusCode(404);
+                return respuesta.Count > 0 ? StatusCode(200, respuesta) : NoContent();
             }
             catch(Exception ex)
             {
@@ -72,6 +72,7 @@ namespace capa_datos.Controllers
             values = values.Remove(values.Length - 2);
             values += ")";
             consulta += values;
+
             try
             {
                 using (SqlCommand comando = new SqlCommand(consulta))
@@ -80,7 +81,7 @@ namespace capa_datos.Controllers
                     {
                         comando.Parameters.AddWithValue($"@{valor.Key}", valor.Value);
                     }
-                    filasAfectadas = await conexion.EjecutarCambios(comando);
+                    filasAfectadas = await Conexion.EjecutarCambios(comando);
                 }
                 return filasAfectadas > 0 ? StatusCode(201) : StatusCode(400);
             }
@@ -101,7 +102,7 @@ namespace capa_datos.Controllers
                 using (var comando = new SqlCommand(consulta))
                 {
                     comando.Parameters.AddWithValue("@id", id);
-                    filasAfectadas = await conexion.EjecutarCambios(comando);
+                    filasAfectadas = await Conexion.EjecutarCambios(comando);
                 }
                 return filasAfectadas > 0 ? StatusCode(200) : StatusCode(404);
             } 
@@ -134,7 +135,7 @@ namespace capa_datos.Controllers
                         comando.Parameters.AddWithValue($"@{valor.Key}", valor.Value);
                     }
                     comando.Parameters.AddWithValue("@id", id);
-                    filasAfectadas = await conexion.EjecutarCambios(comando);
+                    filasAfectadas = await Conexion.EjecutarCambios(comando);
                 }
                 return filasAfectadas > 0 ? StatusCode(200) : StatusCode(404);
             }

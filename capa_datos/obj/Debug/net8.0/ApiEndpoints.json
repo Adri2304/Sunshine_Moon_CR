@@ -1,8 +1,8 @@
 [
   {
     "ContainingType": "capa_datos.Controllers.AutenticarController",
-    "Method": "Autenticar",
-    "RelativePath": "autenticar/cuenta",
+    "Method": "ConsultarCuenta",
+    "RelativePath": "autenticar/consultar",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
@@ -80,6 +80,38 @@
         "Name": "body",
         "Type": "capa_datos.Clases.Modelos.Producto",
         "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "capa_datos.Controllers.UsuariosController",
+    "Method": "Create",
+    "RelativePath": "usuarios/create",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "body",
+        "Type": "capa_datos.Clases.Modelos.Usuario",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "capa_datos.Controllers.UsuariosController",
+    "Method": "Read",
+    "RelativePath": "usuarios/read/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
       }
     ],
     "ReturnTypes": []

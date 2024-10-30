@@ -20,8 +20,9 @@ namespace capa_datos.Controllers
         public async Task<ActionResult> ConsultarCuenta([FromBody] Dictionary<string, string> body)
         {
             var respuesta = new List<Dictionary<string, object>>();
-            string consulta = " EXEC consultarCuenta @correo";
-
+            string consulta = "SELECT idUsuario, idRol, correo, contrasenia FROM " +
+                "[Entidades].[USUARIO] WHERE correo = @correo";
+            
             try
             {
                 using (var comando = new SqlCommand(consulta))
@@ -29,7 +30,7 @@ namespace capa_datos.Controllers
                     comando.Parameters.AddWithValue("@correo", body["correo"]);
                     respuesta = await Conexion.EjecutarConsulta(comando);
                 }
-                return !respuesta.IsNullOrEmpty() ? Ok(respuesta) : NotFound();
+                return respuesta.Count > 0 ? Ok(respuesta) : NotFound();
             }
             catch (Exception ex)
             {
