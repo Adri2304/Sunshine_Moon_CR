@@ -21,25 +21,31 @@ namespace capa_datos.Controllers
         public async Task<ActionResult> Read(int? id)
         {
             List<Dictionary<string, object>> respuesta = new List<Dictionary<string, object>>();
+            string consulta = "EXEC consultarUsuarios NULL";
             try
             {
                 using (SqlCommand comando = new SqlCommand())
                 {
-                    string consulta = "SELECT * FROM [Entidades].[USUARIO]";
-
+                    comando.CommandText = consulta;
                     if (id.HasValue)
                     {
-                        consulta += " WHERE idUsuario = @id";
+                        consulta = consulta.Remove(consulta.Length - 4);
+                        consulta += "@id";
                         comando.CommandText = consulta;
                         comando.Parameters.AddWithValue("@id", id);
                     }
-                    else
-                    {
-                        comando.CommandText = consulta;
-                    }
+                    
                     respuesta = await Conexion.EjecutarConsulta(comando);
                 }
                 return respuesta.Count > 0 ? StatusCode(200, respuesta) : NoContent();
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest();
+            }
+            catch (SqlException ex)
+            {
+                return ex.Number == 547 || ex.Number == 2627 ? BadRequest() : StatusCode(500);
             }
             catch (Exception ex)
             {
@@ -53,19 +59,13 @@ namespace capa_datos.Controllers
         {
             int filasAfectadas;
             var datos = body.DevolverDiccionario();
-            string consulta = "INSERT INTO [Entidades].[USUARIO] (";
-            string values = ") VALUES (";
+            string consulta = "EXEC crearUsuario ";
 
             foreach (var valor in datos)
             {
-                consulta += $"{valor.Key}, ";
-                values += $"@{valor.Key}, ";
+                consulta += $"@{valor.Key}, ";
             }
             consulta = consulta.Remove(consulta.Length - 2);
-            values = values.Remove(values.Length - 2);
-            values += ")";
-            consulta += values;
-
             try
             {
                 using (SqlCommand comando = new SqlCommand(consulta))
@@ -76,12 +76,28 @@ namespace capa_datos.Controllers
                     }
                     filasAfectadas = await Conexion.EjecutarCambios(comando);
                 }
-                return filasAfectadas > 0 ? StatusCode(201) : StatusCode(400);
+                return filasAfectadas > 1 ? StatusCode(201) : StatusCode(400);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest();
+            }
+            catch (SqlException ex)
+            {
+                return ex.Number == 547 || ex.Number == 2627 ? BadRequest() : StatusCode(500);
             }
             catch (Exception ex)
             {
                 return StatusCode(500);
             }
         }
+
+        //[HttpPatch]
+        //[Route("disable/{id}")]
+        //public async Task<ActionResult> Disable(int id)
+        //{
+        //    int filasAfectadas = 0;
+        //    string consulta = "UPDATE [Entidades].[USUARIO] SET ";
+        //}
     }
 }

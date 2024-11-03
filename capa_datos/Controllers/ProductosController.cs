@@ -9,6 +9,7 @@ using System.Drawing;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using System.Globalization;
+using Microsoft.Extensions.Options;
 
 namespace capa_datos.Controllers
 {
@@ -48,7 +49,15 @@ namespace capa_datos.Controllers
                 }
                 return respuesta.Count > 0 ? StatusCode(200, respuesta) : NoContent();
             }
-            catch(Exception ex)
+            catch (ArgumentException ex)
+            {
+                return BadRequest();
+            }
+            catch (SqlException ex)
+            {
+                return ex.Number == 547 || ex.Number == 2627 ? BadRequest() : StatusCode(500);
+            }
+            catch (Exception ex)
             {
                 return StatusCode(500);
             }
@@ -85,6 +94,14 @@ namespace capa_datos.Controllers
                 }
                 return filasAfectadas > 0 ? StatusCode(201) : StatusCode(400);
             }
+            catch (ArgumentException ex)
+            {
+                return BadRequest();
+            }
+            catch (SqlException ex)
+            {
+                return ex.Number == 547 || ex.Number == 2627 ? BadRequest("SQL") : StatusCode(500, "ERROR");
+            }
             catch (Exception ex)
             {
                 return StatusCode(500);
@@ -105,11 +122,19 @@ namespace capa_datos.Controllers
                     filasAfectadas = await Conexion.EjecutarCambios(comando);
                 }
                 return filasAfectadas > 0 ? StatusCode(200) : StatusCode(404);
-            } 
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest();
+            }
+            catch (SqlException ex)
+            {
+                return ex.Number == 547 || ex.Number == 2627 ? BadRequest() : StatusCode(500);
+            }
             catch (Exception ex)
             {
                 return StatusCode(500);
-            } 
+            }
         }
 
         [HttpPut]
@@ -139,10 +164,39 @@ namespace capa_datos.Controllers
                 }
                 return filasAfectadas > 0 ? StatusCode(200) : StatusCode(404);
             }
+            catch (ArgumentException ex)
+            {
+                return BadRequest();
+            }
+            catch (SqlException ex)
+            {
+                return ex.Number == 547 || ex.Number == 2627 ? BadRequest() : StatusCode(500);
+            }
             catch (Exception ex)
             {
                 return StatusCode(500);
             }
         }
+
+        //[HttpGet]
+        //[Route("filter")]
+        //public async Task<ActionResult> filter()
+        //{
+        //    var resultado = new List<Dictionary<string, object>>();
+        //    var parametros = ObtenerParametros(HttpContext.Request.Query);
+        //    string consulta = "SELECT idProducto FROM [Entidades].[PRODUCTO_CATEGORIA] WHERE";
+        //}
+
+        //private Dictionary<string, object> ObtenerParametros(IQueryCollection parametros)
+        //{
+        //    var resultado = new Dictionary<string, object>();
+
+        //    foreach (var item in parametros)
+        //    {
+        //        resultado.Add(item.Key, item.Value.ToString());
+        //    }
+
+        //    return resultado;
+        //}
     }
 }

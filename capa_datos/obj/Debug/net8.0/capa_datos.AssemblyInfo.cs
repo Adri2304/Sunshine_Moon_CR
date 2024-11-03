@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("capa_datos")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+059f9de991bd5dfd6073c255eb6c6e61c5874221")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+855e083ef39aece6ed519a524454252fe55c8d30")]
 [assembly: System.Reflection.AssemblyProductAttribute("capa_datos")]
 [assembly: System.Reflection.AssemblyTitleAttribute("capa_datos")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

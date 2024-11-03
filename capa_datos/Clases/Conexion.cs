@@ -19,8 +19,7 @@ namespace capa_datos.Clases
         public async Task<List<Dictionary<String, Object>>> EjecutarConsulta(SqlCommand comando)
         {
             List<Dictionary<String, Object>> resultado = new List<Dictionary<String, Object>>();
-            try
-            {
+
                 using (SqlConnection conexion = new SqlConnection(this.cadena_conexion))
                 {
                     await conexion.OpenAsync();
@@ -40,30 +39,21 @@ namespace capa_datos.Clases
                         }
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-            }
-            return resultado;
+                return resultado;
         }
 
         //Este metodo sola mente ejecuta cambios en la base de datos (CREATE, DELETE, UPDATE)
         public async Task<int> EjecutarCambios(SqlCommand comando)
         {
             int filasAfectadas = 0;
-            try
-            {
+
                 using (SqlConnection conexion = new SqlConnection(this.cadena_conexion))
                 {
                     await conexion.OpenAsync();
                     comando.Connection = conexion;
                     filasAfectadas = await comando.ExecuteNonQueryAsync();
                 }
-            }
-            catch (Exception ex)
-            {
-            }
-            return filasAfectadas;
+                return filasAfectadas;
         }
     }
 }
