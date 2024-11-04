@@ -16,6 +16,70 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "capa_datos.Controllers.CarritoController",
+    "Method": "create",
+    "RelativePath": "carrito/create",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "body",
+        "Type": "capa_datos.Clases.Models.Carrito",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "capa_datos.Controllers.CarritoController",
+    "Method": "Delete",
+    "RelativePath": "carrito/delete/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "capa_datos.Controllers.CarritoController",
+    "Method": "Read",
+    "RelativePath": "carrito/read/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "capa_datos.Controllers.CarritoController",
+    "Method": "Truncate",
+    "RelativePath": "carrito/truncate/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "capa_datos.Controllers.ProductosController",
     "Method": "Create",
     "RelativePath": "productos/create",

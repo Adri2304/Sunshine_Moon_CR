@@ -34,15 +34,15 @@ namespace capa_datos.Controllers
             }
             catch (ArgumentException ex)
             {
-                return BadRequest();
+                return BadRequest(ex.Message);
             }
             catch (SqlException ex)
             {
-                return ex.Number == 547 || ex.Number == 2627 ? BadRequest() : StatusCode(500);
+                return ex.Number == 547 || ex.Number == 2627 ? BadRequest(ex.Message) : StatusCode(500, ex.Message);
             }
             catch (Exception ex)
             {
-                return StatusCode(500);
+                return StatusCode(500, ex.Message);
             }
         }
     }

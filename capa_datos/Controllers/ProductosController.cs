@@ -77,10 +77,7 @@ namespace capa_datos.Controllers
                 consulta += $"{valor.Key}, ";
                 values += $"@{valor.Key}, ";
             }
-            consulta = consulta.Remove(consulta.Length - 2);
-            values = values.Remove(values.Length - 2);
-            values += ")";
-            consulta += values;
+            consulta = consulta.Remove(consulta.Length - 2) + values.Remove(values.Length - 2) + ")";
 
             try
             {
