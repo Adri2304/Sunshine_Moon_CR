@@ -10,6 +10,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using System.Globalization;
 using Microsoft.Extensions.Options;
+using System.Transactions;
 
 namespace capa_datos.Controllers
 {
@@ -50,97 +51,122 @@ namespace capa_datos.Controllers
                 return respuesta.Count > 0 ? StatusCode(200, respuesta) : NoContent();
             }
             catch (ArgumentException ex)
-            {
-                return BadRequest();
-            }
+            { return BadRequest(ex.Message); }
             catch (SqlException ex)
-            {
-                return ex.Number == 547 || ex.Number == 2627 ? BadRequest() : StatusCode(500);
-            }
+            { return StatusCode(500, ex.Message); }
             catch (Exception ex)
-            {
-                return StatusCode(500);
-            }
+            { return StatusCode(500, ex.Message); }
         }
 
         [HttpPost]
         [Route("create")]
         public async Task<ActionResult> Create([FromBody] Producto body)
         {
-            int filasAfectadas;
+            int filasAfectadas = 0;
+            var idInsertado = 0;
             var datos = body.DevolverDiccionario();
-            string consulta = "INSERT INTO [Entidades].[PRODUCTO] (";
-            string values = ") VALUES (";
+            var categorias = (int[])datos["categorias"];
+            datos.Remove("categorias");
+            string consulta = "EXEC Procedimientos.REGISTRAR_PRODUCTO ";
 
             foreach (var valor in datos)
             {
-                consulta += $"{valor.Key}, ";
-                values += $"@{valor.Key}, ";
+                consulta += $"@{valor.Key}, ";
             }
-            consulta = consulta.Remove(consulta.Length - 2) + values.Remove(values.Length - 2) + ")";
+            consulta = consulta.Remove(consulta.Length - 2);
 
-            try
+            using (var _Conexion = new SqlConnection(Conexion.GetCadenaConexion()))
             {
-                using (SqlCommand comando = new SqlCommand(consulta))
+                await _Conexion.OpenAsync();
+                var transaccion = _Conexion.BeginTransaction();
+
+                try
                 {
-                    foreach (var valor in datos)
+
+                    using (SqlCommand comando = new SqlCommand(consulta, _Conexion, transaccion))
                     {
-                        comando.Parameters.AddWithValue($"@{valor.Key}", valor.Value);
+                        foreach (var valor in datos)
+                        {
+                            comando.Parameters.AddWithValue($"@{valor.Key}", valor.Value);
+                        }
+
+                        //; // Obtener el id del producto insertado                        
+                        
+                        if ((idInsertado = Convert.ToInt32(await comando.ExecuteScalarAsync())) > 0)
+                        {
+                            consulta = "INSERT INTO [Entidades].[PRODUCTO_CATEGORIA] (idProducto, idCategoria) VALUES ";
+
+                            for (int i = 0; i < categorias.Length; i++)
+                            {
+                                consulta += $"(@idInsertado, @categoria{i}), ";
+                            }
+                            consulta = consulta.Remove(consulta.Length - 2);
+                            comando.CommandText = consulta;
+                            comando.Parameters.Clear();
+                            comando.Parameters.AddWithValue("@idInsertado", idInsertado);
+
+                            for (int i = 0; i < categorias.Length; i++)
+                            {
+                                comando.Parameters.AddWithValue($"@categoria{i}", categorias[i]);
+                            }
+                            filasAfectadas = await comando.ExecuteNonQueryAsync();
+                        }
+                        if (filasAfectadas > 0)
+                        {
+                            transaccion.Commit();
+                            return StatusCode(201);
+                        }
+                        else
+                        {
+                            transaccion.Rollback();
+                            return Conflict();
+                        }
                     }
-                    filasAfectadas = await Conexion.EjecutarCambios(comando);
                 }
-                return filasAfectadas > 0 ? StatusCode(201) : StatusCode(400);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest();
-            }
-            catch (SqlException ex)
-            {
-                return ex.Number == 547 || ex.Number == 2627 ? BadRequest("SQL") : StatusCode(500, "ERROR");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500);
+                catch (ArgumentException ex)
+                { transaccion.Rollback(); return BadRequest(ex.Message); }
+                catch (SqlException ex)
+                { transaccion.Rollback(); return ex.Number == 547 ? Conflict(ex.Message) : StatusCode(500, ex.Message); }
+                catch (Exception ex)
+                { transaccion.Rollback(); return StatusCode(500, ex.Message); }
             }
         }
 
-        [HttpDelete]
-        [Route("delete/{id}")]
-        public async Task<ActionResult> Delete(int id)
+        // PENDIENTE..........
+        [HttpPatch]
+        [Route("cambiarestado/{id}")]
+        public async Task<ActionResult> cambiarEstado(int id, [FromBody] Dictionary<string, int> body)
         {
             int filasAfectadas = 0;
-            string consulta = "DELETE FROM [Entidades].[PRODUCTO] WHERE idProducto = @id";
+            string consulta = "UPDATE FROM [Entidades].[PRODUCTO] SET idEstadoProducto = @idEstadoProducto " +
+                "WHERE idProducto = @id";
             try
             {
                 using (var comando = new SqlCommand(consulta))
                 {
                     comando.Parameters.AddWithValue("@id", id);
+                    comando.Parameters.AddWithValue("@iidEstadoProductod", (int)body["idEstadoProducto"]);
                     filasAfectadas = await Conexion.EjecutarCambios(comando);
                 }
-                return filasAfectadas > 0 ? StatusCode(200) : StatusCode(404);
+                return filasAfectadas == 0 ? StatusCode(200) : StatusCode(404);
             }
             catch (ArgumentException ex)
-            {
-                return BadRequest();
-            }
+            { return BadRequest(ex.Message); }
             catch (SqlException ex)
-            {
-                return ex.Number == 547 || ex.Number == 2627 ? BadRequest() : StatusCode(500);
-            }
+            { return ex.Number == 547 ? Conflict(ex.Message) : StatusCode(500, ex.Message); }
             catch (Exception ex)
-            {
-                return StatusCode(500);
-            }
+            { return StatusCode(500, ex.Message); }
         }
 
-        [HttpPut]
+        [HttpPatch]
         [Route("update/{id}")]
         public async Task<ActionResult> Update(int id, [FromBody] Producto body)
         {
-            var datos = body.DevolverDiccionario();
-            string consulta = "UPDATE [Entidades].[PRODUCTO] SET ";
             int filasAfectadas = 0;
+            var datos = body.DevolverDiccionario();
+            var categorias = (int[])datos["categorias"];
+            datos.Remove("categorias");
+            string consulta = "UPDATE [Entidades].[PRODUCTO] SET ";
 
             foreach (var valor in datos)
             {
@@ -148,52 +174,129 @@ namespace capa_datos.Controllers
             }
             consulta = consulta.Remove(consulta.Length - 2) + $" WHERE idProducto = @id";
 
+            using (var _Conexion = new SqlConnection(Conexion.GetCadenaConexion()))
+            {
+                await _Conexion.OpenAsync();
+                var transaccion = _Conexion.BeginTransaction();
+                try
+                {
+
+                    using (SqlCommand comando = new SqlCommand(consulta, _Conexion, transaccion))
+                    {
+                        comando.Parameters.AddWithValue("@id", id);
+                        foreach (var valor in datos)
+                        {
+                            comando.Parameters.AddWithValue($"@{valor.Key}", valor.Value);
+                        }
+
+                        if (await comando.ExecuteNonQueryAsync() > 0)
+                        {
+                            comando.Parameters.Clear();
+                            comando.CommandText = "DELETE FROM [Entidades].[PRODUCTO_CATEGORIA] WHERE idProducto = @id";
+                            comando.Parameters.AddWithValue("@id", id);
+
+                            if (await comando.ExecuteNonQueryAsync() > 0)
+                            {
+                                comando.Parameters.Clear();
+                                consulta = "INSERT INTO [Entidades].[PRODUCTO_CATEGORIA] (idProducto, idCategoria) VALUES ";
+                                for (int i = 0; i < categorias.Length; i++)
+                                {
+                                    consulta += $"(@id, @categoria{i}), ";
+                                }
+                                consulta = consulta.Remove(consulta.Length - 2);
+                                comando.CommandText = consulta;
+                                comando.Parameters.AddWithValue("@id", id);
+
+                                for (int i = 0; i < categorias.Length; i++)
+                                {
+                                    comando.Parameters.AddWithValue($"@categoria{i}", categorias[i]);
+                                }
+                                filasAfectadas = await comando.ExecuteNonQueryAsync();
+                            }
+                        }
+                        if (filasAfectadas > 0)
+                        {
+                            transaccion.Commit();
+                            return Ok();
+                        }
+                        else
+                        {
+                            transaccion.Rollback();
+                            return Conflict();
+                        }
+                    }
+                }
+                catch (ArgumentException ex)
+                { transaccion.Rollback(); return BadRequest(ex.Message); }
+                catch (SqlException ex)
+                { transaccion.Rollback(); return ex.Number == 547 ? Conflict(ex.Message) : StatusCode(500, ex.Message); }
+                catch (Exception ex)
+                { transaccion.Rollback(); return StatusCode(500, ex.Message); }
+            }
+
+            //[HttpGet]
+            //[Route("filter")]
+            //public async Task<ActionResult> filter()
+            //{
+            //    var resultado = new List<Dictionary<string, object>>();
+            //    var parametros = ObtenerParametros(HttpContext.Request.Query);
+            //    string consulta = "SELECT idProducto FROM [Entidades].[PRODUCTO_CATEGORIA] WHERE";
+            //}
+
+            //private Dictionary<string, object> ObtenerParametros(IQueryCollection parametros)
+            //{
+            //    var resultado = new Dictionary<string, object>();
+
+            //    foreach (var item in parametros)
+            //    {
+            //        resultado.Add(item.Key, item.Value.ToString());
+            //    }
+
+            //    return resultado;
+            //}
+        }
+
+        [HttpGet]
+        [Route("filtro")]
+        public async Task<ActionResult> filtro([FromQuery] string nombre = "", [FromQuery] int[] categorias = null)
+        {
+            var resultado = new List<Dictionary<string, object>>();
+            string consulta = "SELECT P.* FROM [Entidades].[PRODUCTO] AS P ";
+
+            if (categorias != null)
+            {
+                consulta += @"JOIN (SELECT idProducto, idCategoria FROM (SELECT idProducto, STRING_AGG(idCategoria, ', ') 
+                    as idCategoria FROM [Entidades].[PRODUCTO_CATEGORIA] GROUP BY idProducto) AS C WHERE";
+
+                for (int i = 0; i < categorias.Length; i++)
+                {
+                    consulta += $" idCategoria LIKE @categorias{i} AND";
+                }
+                consulta = consulta.Remove(consulta.Length - 3) + ") AS PC ON P.idProducto = PC.idProducto";
+            }
+            consulta += " WHERE P.nombre LIKE @nombre";
             try
             {
                 using (var comando = new SqlCommand(consulta))
                 {
-                    foreach (var valor in datos)
+                    if (categorias != null)
                     {
-                        comando.Parameters.AddWithValue($"@{valor.Key}", valor.Value);
+                        for (int i = 0; i < categorias.Length; i++)
+                        {
+                            comando.Parameters.AddWithValue($"categorias{i}", $"%{categorias[i]}%");
+                        }
                     }
-                    comando.Parameters.AddWithValue("@id", id);
-                    filasAfectadas = await Conexion.EjecutarCambios(comando);
+                    comando.Parameters.AddWithValue("@nombre", $"%{nombre}%");
+                    resultado = await Conexion.EjecutarConsulta(comando);
                 }
-                return filasAfectadas > 0 ? StatusCode(200) : StatusCode(404);
+                return resultado.Count > 0 ? Ok(resultado) : NoContent();
             }
             catch (ArgumentException ex)
-            {
-                return BadRequest();
-            }
+            { return BadRequest(ex.Message); }
             catch (SqlException ex)
-            {
-                return ex.Number == 547 || ex.Number == 2627 ? BadRequest() : StatusCode(500);
-            }
+            { return StatusCode(500, ex.Message); }
             catch (Exception ex)
-            {
-                return StatusCode(500);
-            }
+            { return StatusCode(500, ex.Message); }
         }
-
-        //[HttpGet]
-        //[Route("filter")]
-        //public async Task<ActionResult> filter()
-        //{
-        //    var resultado = new List<Dictionary<string, object>>();
-        //    var parametros = ObtenerParametros(HttpContext.Request.Query);
-        //    string consulta = "SELECT idProducto FROM [Entidades].[PRODUCTO_CATEGORIA] WHERE";
-        //}
-
-        //private Dictionary<string, object> ObtenerParametros(IQueryCollection parametros)
-        //{
-        //    var resultado = new Dictionary<string, object>();
-
-        //    foreach (var item in parametros)
-        //    {
-        //        resultado.Add(item.Key, item.Value.ToString());
-        //    }
-
-        //    return resultado;
-        //}
     }
 }

@@ -8,11 +8,16 @@ namespace capa_datos.Clases
 {
     public class Conexion
     {
-        private readonly String cadena_conexion;
+        private readonly string cadena_conexion;
 
         public Conexion(IConfiguration configuration)
         {
             this.cadena_conexion = configuration.GetConnectionString("database");
+        }
+
+        public string GetCadenaConexion()
+        {
+            return cadena_conexion;
         }
 
         //Este metodo ejecuta las consultas, y devuelve filas de la base de datos (READ, FILTROS)

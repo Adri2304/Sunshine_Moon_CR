@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using capa_datos.Clases.Models;
+using System.Transactions;
 
 namespace capa_datos.Controllers
 {
@@ -37,7 +38,7 @@ namespace capa_datos.Controllers
             catch (ArgumentException ex)
             { return BadRequest(ex.Message); }
             catch (SqlException ex)
-            { return ex.Number == 547 || ex.Number == 2627 ? BadRequest(ex.Message) : StatusCode(500, ex.Message); }
+            { return StatusCode(500, ex.Message); }
             catch (Exception ex)
             { return StatusCode(500, ex.Message); }
         }
@@ -48,7 +49,7 @@ namespace capa_datos.Controllers
         {
             int filasAfectadas = 0;
             var datos = body.DevolverDiccionario();
-            string consulta = "EXEC insertarCarrito @idUsuario, @idProducto, @cantidad";
+            string consulta = "EXEC Procedimientos.REGISTRAR_CARRITO @idUsuario, @idProducto, @cantidad";
             try
             {
                 using (var comando = new SqlCommand(consulta))
@@ -63,7 +64,7 @@ namespace capa_datos.Controllers
             catch (ArgumentException ex)
             { return BadRequest(ex.Message); }
             catch (SqlException ex)
-            { return ex.Number == 2601 || ex.Number == 2627 ? BadRequest(ex.Message) : StatusCode(500, ex.Message); }
+            { return ex.Number == 547 ? Conflict(ex.Message) : StatusCode(500, ex.Message); }
             catch (Exception ex)
             { return StatusCode(500, ex.Message); }
         }
@@ -75,12 +76,21 @@ namespace capa_datos.Controllers
             int filasAfectadas = 0;
             string consulta = "DELETE FROM [Compras].[CARRITO] WHERE idCarrito = @id";
 
-            using (var comando = new SqlCommand(consulta))
+            try
             {
-                comando.Parameters.AddWithValue("@id", id);
-                filasAfectadas = await Conexion.EjecutarCambios(comando);
+                using (var comando = new SqlCommand(consulta))
+                {
+                    comando.Parameters.AddWithValue("@id", id);
+                    filasAfectadas = await Conexion.EjecutarCambios(comando);
+                }
                 return filasAfectadas > 0 ? Ok() : NotFound();
             }
+            catch (ArgumentException ex)
+            { return BadRequest(ex.Message); }
+            catch (SqlException ex)
+            { return StatusCode(500, ex.Message); }
+            catch (Exception ex)
+            { return StatusCode(500, ex.Message); }
         }
 
         [HttpDelete]
@@ -90,12 +100,21 @@ namespace capa_datos.Controllers
             int filasAfectadas = 0;
             string consulta = "DELETE FROM [Compras].[CARRITO] WHERE idUsuario = @id";
 
-            using (var comando = new SqlCommand(consulta))
+            try
             {
-                comando.Parameters.AddWithValue("@id", id);
-                filasAfectadas = await Conexion.EjecutarCambios(comando);
-                return filasAfectadas > 0 ? Ok() : NotFound();
+                using (var comando = new SqlCommand(consulta))
+                {
+                    comando.Parameters.AddWithValue("@id", id);
+                    filasAfectadas = await Conexion.EjecutarCambios(comando);
+                    return filasAfectadas > 0 ? Ok() : NotFound();
+                }
             }
+            catch (ArgumentException ex)
+            { return BadRequest(ex.Message); }
+            catch (SqlException ex)
+            { return StatusCode(500, ex.Message); }
+            catch (Exception ex)
+            { return StatusCode(500, ex.Message); }
         }
     }
 }

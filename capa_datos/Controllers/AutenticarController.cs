@@ -33,17 +33,11 @@ namespace capa_datos.Controllers
                 return respuesta.Count > 0 ? Ok(respuesta) : NotFound();
             }
             catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            { return BadRequest(ex.Message); }
             catch (SqlException ex)
-            {
-                return ex.Number == 547 || ex.Number == 2627 ? BadRequest(ex.Message) : StatusCode(500, ex.Message);
-            }
+            { return StatusCode(500, ex.Message); }
             catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
+            { return StatusCode(500, ex.Message); }
         }
     }
 }

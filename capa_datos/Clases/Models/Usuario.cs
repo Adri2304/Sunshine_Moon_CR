@@ -5,36 +5,40 @@ namespace capa_datos.Clases.Modelos
 {
     public class Usuario
     {
-        public int? idUsuario { get; set; }
-        public int idRol { get; set; }
-        public string nombre { get; set; }
-        public string apellidoUno { get; set; }
-        public string apellidoDos { get; set; }
-        public string correo { get; set; }
-        public string contrasenia { get; set; }
-        public DateTime fechaRegistro { get; set; }
-        public string token_sesion { get; set; }
-        public byte[] imagen { get; set; }
+        public int? IdUsuario { get; set; }
+        public int IdRol { get; set; }
+        public string Nombre { get; set; }
+        public string ApellidoUno { get; set; }
+        public string ApellidoDos { get; set; }
+        public string Correo { get; set; }
+        public string Telefono { get; set; }
+        public string Contrasenia { get; set; }
+        public DateTime? FechaRegistro { get; set; }
+        public string TokenSesion { get; set; }
+        public string Imagen { get; set; }
+        public bool EstadoCuenta { get; set; }
 
         public Dictionary<string, object> DevolverDiccionario()
         {
             var diccionario = new Dictionary<string, object>
             {
-                { "idRol", idRol },
-                { "nombre", nombre },
-                { "apellidoUno", apellidoUno },
-                { "apellidoDos", apellidoDos },
-                { "correo", correo },
-                { "contrasenia", contrasenia },
-                { "fechaRegistro", fechaRegistro },
-                { "token_sesion", token_sesion },
-                { "imagen", imagen },
+                { "idRol", IdRol },
+                { "nombre", Nombre },
+                { "apellidoUno", ApellidoUno },
+                { "apellidoDos", ApellidoDos },
+                { "correo", Correo },
+                { "telefono", Telefono },
+                { "contrasenia", Contrasenia },
+                { "tokenSesion", TokenSesion },
+                { "imagen", Imagen },
+                { "estadoCuenta", EstadoCuenta }
             };
 
-            if (idUsuario != null)
-            {
-                diccionario.Add("idUsuario", idUsuario);
-            }
+            if (IdUsuario.HasValue)
+                diccionario.Add("idUsuario", IdUsuario);
+            if (FechaRegistro.HasValue)
+                diccionario.Add("fechaRegistro", FechaRegistro);
+
             return diccionario;
         }
     }
