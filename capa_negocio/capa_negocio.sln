@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35327.3
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "capa_negocio", "capa_negocio.csproj", "{3161E7E2-F784-4D1D-BC36-4271A7F8E20E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3161E7E2-F784-4D1D-BC36-4271A7F8E20E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3161E7E2-F784-4D1D-BC36-4271A7F8E20E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3161E7E2-F784-4D1D-BC36-4271A7F8E20E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3161E7E2-F784-4D1D-BC36-4271A7F8E20E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0141E6A3-5643-47BD-B91E-B639DB343887}
+	EndGlobalSection
+EndGlobal
