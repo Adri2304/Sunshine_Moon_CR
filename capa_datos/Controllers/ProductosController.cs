@@ -1,16 +1,7 @@
 ﻿using capa_datos.Clases;
 using capa_datos.Clases.Modelos;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using System.Data;
 using Microsoft.Data.SqlClient;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using System.Drawing;
-using System.Text.Json;
-using Microsoft.AspNetCore.Http;
-using System.Globalization;
-using Microsoft.Extensions.Options;
-using System.Transactions;
 
 namespace capa_datos.Controllers
 {

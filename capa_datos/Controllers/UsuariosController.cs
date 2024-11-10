@@ -1,9 +1,7 @@
 ﻿using capa_datos.Clases;
-using capa_datos.Clases.Modelos;
 using capa_datos.Clases.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
-using System.Data;
 
 namespace capa_datos.Controllers
 {
@@ -65,7 +63,6 @@ namespace capa_datos.Controllers
                     {
                         comando.Parameters.AddWithValue($"@{valor.Key}", valor.Value);
                     }
-                    //return Ok(consulta);
                     filasAfectadas = await Conexion.EjecutarCambios(comando);
                 }
                 return filasAfectadas == 2 ? StatusCode(201) : Conflict();
@@ -121,6 +118,30 @@ namespace capa_datos.Controllers
                 return filasAfectadas == 1 ? Ok() : NotFound();
             }
             catch (ArgumentException ex)
+            { return BadRequest(ex.Message); }
+            catch (SqlException ex)
+            { return StatusCode(500, ex.Message); }
+            catch (Exception ex)
+            { return StatusCode(500, ex.Message); }
+        }
+
+        [HttpGet]
+        [Route("compras/{id}")]
+        public async Task<ActionResult> ConsultarPedidos(int id)
+        {
+            var resultado = new List<Dictionary<string, object>>();
+            string consulta = "SELECT * FROM [Compras].[COMPRA] WHERE idUsuario = @id";
+
+            try
+            {
+                using (var comando = new SqlCommand(consulta))
+                {
+                    comando.Parameters.AddWithValue("@id", id);
+                    resultado = await Conexion.EjecutarConsulta(comando);
+                }
+                return resultado.Count > 0 ? Ok(resultado) : NoContent();
+            }
+            catch(ArgumentException ex)
             { return BadRequest(ex.Message); }
             catch (SqlException ex)
             { return StatusCode(500, ex.Message); }

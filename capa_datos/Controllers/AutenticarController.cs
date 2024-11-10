@@ -1,7 +1,6 @@
 ﻿using capa_datos.Clases;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
-using Microsoft.IdentityModel.Tokens;
 
 namespace capa_datos.Controllers
 {

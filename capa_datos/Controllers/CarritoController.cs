@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using capa_datos.Clases.Models;
-using System.Transactions;
 
 namespace capa_datos.Controllers
 {
