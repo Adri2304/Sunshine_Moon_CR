@@ -1,6 +1,7 @@
 ﻿using capa_datos.Clases;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
+using System.Globalization;
 
 namespace capa_datos.Controllers
 {
@@ -30,6 +31,53 @@ namespace capa_datos.Controllers
                     respuesta = await Conexion.EjecutarConsulta(comando);
                 }
                 return respuesta.Count > 0 ? Ok(respuesta) : NotFound();
+            }
+            catch (ArgumentException ex)
+            { return BadRequest(ex.Message); }
+            catch (SqlException ex)
+            { return StatusCode(500, ex.Message); }
+            catch (Exception ex)
+            { return StatusCode(500, ex.Message); }
+        }
+
+        [HttpPatch]
+        [Route("settoken/{id}")]
+        public async Task<ActionResult> ActualizarRefreshToken(int id, [FromBody] Dictionary<string,string> body)
+        {
+            int filasAfectadas = 0;
+            string consulta = "UPDATE [Entidades].[USUARIO] SET tokenSesion = @token WHERE idUsuario = @id";
+            try
+            {
+                using (var comando = new SqlCommand(consulta))
+                {
+                    comando.Parameters.AddWithValue("@token", body["refreshToken"]);
+                    comando.Parameters.AddWithValue("@id", id);
+                    filasAfectadas = await Conexion.EjecutarCambios(comando);
+                }
+                return filasAfectadas == 1 ? Ok() : NotFound();
+            }
+            catch (ArgumentException ex)
+            { return BadRequest(ex.Message); }
+            catch (SqlException ex)
+            { return StatusCode(500, ex.Message); }
+            catch (Exception ex)
+            { return StatusCode(500, ex.Message); }
+        }
+
+        [HttpGet]
+        [Route("gettoken/{id}")]
+        public async Task<ActionResult> ObtenerToken(int id)
+        {
+            var resultado = new List<Dictionary<string, object>>();
+            string consulta = "SELECT tokenSesion FROM [Entidades].[USUARIO] WHERE idUsuario = @id";
+            try
+            {
+                using (var comando = new SqlCommand(consulta))
+                {
+                    comando.Parameters.AddWithValue("@id", id);
+                    resultado = await Conexion.EjecutarConsulta(comando);
+                }
+                return resultado.Count > 0 ? Ok(resultado) : NoContent();
             }
             catch (ArgumentException ex)
             { return BadRequest(ex.Message); }
