@@ -3,23 +3,24 @@
     public class AuthMiddleware
     {
         private readonly RequestDelegate _next;
-        private const string HEADER_API_KEY = "SECRET_API_KEY";
-        private string SECRET_API_KEY;
+        private readonly string HeaderApiKey;
+        private readonly string SecretApiKey;
 
         public AuthMiddleware(RequestDelegate next, IConfiguration configuracion)
         {
-            _next = next;
-            SECRET_API_KEY = configuracion["SecretApiKey:key"];
+            this._next = next;
+            this.HeaderApiKey = "SECRET_API_KEY";
+            this.SecretApiKey = configuracion["SECRET_API_KEY"];
         }
 
         public async Task InvokeAsync(HttpContext context)
         {
-            if (!context.Request.Headers.TryGetValue(HEADER_API_KEY, out var extractedApiKey))
+            if (!context.Request.Headers.TryGetValue(HeaderApiKey, out var extractedApiKey))
             {
                 context.Response.StatusCode = 401;
                 return;
             }
-            if (!SECRET_API_KEY.Equals(extractedApiKey))
+            if (!SecretApiKey.Equals(extractedApiKey))
             {
                 context.Response.StatusCode = 403;
                 return;

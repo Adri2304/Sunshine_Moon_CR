@@ -12,7 +12,7 @@ namespace capa_datos.Clases
 
         public Conexion(IConfiguration configuration)
         {
-            this.cadena_conexion = configuration.GetConnectionString("database");
+            this.cadena_conexion = configuration["DATABASE_CONNECTION"];
         }
 
         public string GetCadenaConexion()
