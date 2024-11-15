@@ -1,14 +1,21 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using DotNetEnv;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddAuthentication(cfg => {
+Env.Load();
+
+builder.Configuration.AddEnvironmentVariables();
+
+builder.Services.AddAuthentication(cfg =>
+{
     cfg.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     cfg.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
     cfg.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-}).AddJwtBearer(x => {
+}).AddJwtBearer(x =>
+{
     x.RequireHttpsMetadata = false;
     x.SaveToken = false;
     x.TokenValidationParameters = new TokenValidationParameters
@@ -16,12 +23,12 @@ builder.Services.AddAuthentication(cfg => {
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = new SymmetricSecurityKey(
             Encoding.UTF8
-            .GetBytes(builder.Configuration["JwtSettings:JwtSecret"])
+            .GetBytes(builder.Configuration["JWT_SECRET"])
         ),
         ValidateIssuer = true,
-        ValidIssuer = builder.Configuration["JwtSettings:JwtIssuer"],
+        ValidIssuer = builder.Configuration["JWT_ISSUER"],
         ValidateAudience = true,
-        ValidAudience = builder.Configuration["JwtSettings:JwtAudience"],
+        ValidAudience = builder.Configuration["JWT_AUDIENCE"],
         ClockSkew = TimeSpan.Zero
     };
 });

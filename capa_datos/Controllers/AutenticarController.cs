@@ -39,6 +39,31 @@ namespace capa_datos.Controllers
             catch (Exception ex)
             { return StatusCode(500, ex.Message); }
         }
+        
+        [HttpGet]
+        [Route("consultar/{id}")]
+        public async Task<ActionResult> ConsultarCuenta(int id)
+        {
+            var respuesta = new List<Dictionary<string, object>>();
+            string consulta = "SELECT idUsuario, idRol, correo, contrasenia FROM " +
+                "[Entidades].[USUARIO] WHERE idUsuario = @id";
+            
+            try
+            {
+                using (var comando = new SqlCommand(consulta))
+                {
+                    comando.Parameters.AddWithValue("@id", id);
+                    respuesta = await Conexion.EjecutarConsulta(comando);
+                }
+                return respuesta.Count > 0 ? Ok(respuesta) : NotFound();
+            }
+            catch (ArgumentException ex)
+            { return BadRequest(ex.Message); }
+            catch (SqlException ex)
+            { return StatusCode(500, ex.Message); }
+            catch (Exception ex)
+            { return StatusCode(500, ex.Message); }
+        }
 
         [HttpPatch]
         [Route("settoken/{id}")]
@@ -77,7 +102,7 @@ namespace capa_datos.Controllers
                     comando.Parameters.AddWithValue("@id", id);
                     resultado = await Conexion.EjecutarConsulta(comando);
                 }
-                return resultado.Count > 0 ? Ok(resultado) : NoContent();
+                return resultado.Count > 0 ? Ok(resultado) : NotFound();
             }
             catch (ArgumentException ex)
             { return BadRequest(ex.Message); }
