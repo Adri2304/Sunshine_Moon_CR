@@ -65,7 +65,8 @@ namespace capa_datos.Controllers
                     }
                     filasAfectadas = await Conexion.EjecutarCambios(comando);
                 }
-                return filasAfectadas == 2 ? StatusCode(201) : Conflict();
+                return filasAfectadas == 2 ? StatusCode(201, "El usuario se creo correctamente")
+                    : Conflict("El correo ingresado ya existe");
             }
             catch (ArgumentException ex)
             { return BadRequest(ex.Message); }
