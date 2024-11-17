@@ -1,6 +1,4 @@
-﻿using System.Reflection.Metadata.Ecma335;
-
-namespace capa_datos.Clases.Modelos
+﻿namespace capa_negocio.Clases.Models
 {
     public class Producto
     {
@@ -11,7 +9,7 @@ namespace capa_datos.Clases.Modelos
         public string medidas { get; set; } // Corresponde a medidas en la tabla
         public string materiales { get; set; } // Corresponde a materiales en la tabla
         public DateTime? fechaRegistro { get; set; } // Corresponde a fechaRegistro en la tabla
-        public int[] categorias { get; set; }   
+        public int[] categorias { get; set; }
         public string imagen { get; set; } // Corresponde a imagen en la tabla (varbinary)
 
         public Dictionary<string, object> DevolverDiccionario()
@@ -30,8 +28,6 @@ namespace capa_datos.Clases.Modelos
 
             if (fechaRegistro != null)
                 diccionario.Add("fechaRegistro", fechaRegistro);
-
-                    
             return diccionario;
         }
     }

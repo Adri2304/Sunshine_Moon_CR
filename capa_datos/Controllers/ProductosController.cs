@@ -73,7 +73,6 @@ namespace capa_datos.Controllers
 
                 try
                 {
-
                     using (SqlCommand comando = new SqlCommand(consulta, _Conexion, transaccion))
                     {
                         foreach (var valor in datos)

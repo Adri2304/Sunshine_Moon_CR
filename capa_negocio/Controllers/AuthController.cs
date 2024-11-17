@@ -35,10 +35,10 @@ namespace capa_negocio.Controllers
                 if (!body.ContainsKey("correo") || !body.ContainsKey("contrasenia"))
                     return BadRequest("Los campos 'correo' y 'contrasenia' son requeridos.");
 
-                //return Ok("llega");
                 var solicitud = new RestRequest("autenticar/consultar", Method.Get);
                 solicitud.AddParameter("correo", body["correo"], ParameterType.QueryString);
                 var response = await Solicitudes.EjecutarSolicitud(solicitud);
+
                 // Comparar las credenciales
                 if ((int)response.StatusCode == 200)
                 {
@@ -65,9 +65,7 @@ namespace capa_negocio.Controllers
                 return StatusCode((int)response.StatusCode);
             }
             catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
+            { return StatusCode(500, "Ocurrio un error en el servidor"); }
         }
 
         [HttpPost]
@@ -118,9 +116,7 @@ namespace capa_negocio.Controllers
                 return Ok(tokens);
             }
             catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }   
+            { return StatusCode(500, "Ocurrio un error en el servidor"); }
         }
 
         private Dictionary<string, string> GenerarTokens(string id, string rol, string correo)
