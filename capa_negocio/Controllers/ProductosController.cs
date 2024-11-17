@@ -2,6 +2,8 @@
 using RestSharp;
 using capa_negocio.Clases;
 using capa_negocio.Clases.Models;
+using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
 
 namespace capa_negocio.Controllers
 {
@@ -26,6 +28,26 @@ namespace capa_negocio.Controllers
             try
             {
                 var solicitud = new RestRequest(url, Method.Get);
+                var respuesta = await Solicitudes.EjecutarSolicitud(solicitud);
+                if ((int)respuesta.StatusCode == 200)
+                {
+                    var data = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(respuesta.Content);
+                    data.RemoveAll(d => "False".Equals(d["estadoProducto"]?.ToString()));//Eliminar los desactivados
+                    return data.Count > 0 ? Ok(data) : NoContent();
+                }
+                return StatusCode((int)respuesta.StatusCode, respuesta.Content);
+            }
+            catch (Exception ex)
+            { return StatusCode(500, ex.Message); }
+        }
+        
+        [HttpGet]
+        [Route("all")]
+        public async Task<ActionResult> ReadAll()
+        {
+            try
+            {
+                var solicitud = new RestRequest("productos/read", Method.Get);
                 var respuesta = await Solicitudes.EjecutarSolicitud(solicitud);
                 return StatusCode((int)respuesta.StatusCode, respuesta.Content);
             }
@@ -56,11 +78,32 @@ namespace capa_negocio.Controllers
         {
             try
             {
-                var solicitud = new RestRequest($"productos/cambiarestado{id}", Method.Patch);
+                var solicitud = new RestRequest($"productos/cambiarestado/{id}", Method.Patch);
                 var respuesta = await Solicitudes.EjecutarSolicitud(solicitud);
                 return StatusCode((int)respuesta.StatusCode, respuesta.Content);
             }
             catch(Exception ex) 
+            { return StatusCode(500, "Ocurrio un error en el servidor"); }
+        }
+
+        [HttpGet]
+        [Route("filtrar")]
+        public async Task<ActionResult> Filter()
+        {
+            try
+            {
+                var parametros = HttpContext.Request.QueryString.Value;
+                var solicitud = new RestRequest($"productos/filtro{parametros}", Method.Get);
+                var respuesta = await Solicitudes.EjecutarSolicitud(solicitud);
+
+                if ((int)respuesta.StatusCode != 200)
+                    return StatusCode((int)respuesta.StatusCode, respuesta.Content);
+
+                var data = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(respuesta.Content);
+                data.RemoveAll(d => "False".Equals(d["estadoProducto"]?.ToString()));//Eliminar los desactivados
+                return data.Count > 0 ? Ok(data) : NoContent();
+            }
+            catch (Exception ex)
             { return StatusCode(500, "Ocurrio un error en el servidor"); }
         }
     }

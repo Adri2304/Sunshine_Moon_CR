@@ -12,7 +12,7 @@ namespace capa_negocio.Clases
 
         public Solicitudes(IConfiguration configuracion)
         {
-            this.SERVER = configuracion["SERVER"];
+            this.SERVER = configuracion["DATA_SERVER"];
             this.HeaderName = "SECRET_API_KEY";
             this.HeaderValue = configuracion["SECRET_API_KEY"];
             this.cliente = new RestClient(SERVER);

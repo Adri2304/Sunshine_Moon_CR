@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using capa_negocio.Clases.Models;
 using RestSharp;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Text.Json;
 
 namespace capa_negocio.Controllers
 {
@@ -16,8 +17,6 @@ namespace capa_negocio.Controllers
         {
             this.Solicitudes = new Solicitudes(configuracion);
         }
-
-        // FALTA EL METODO DE FLTRAR
 
         [HttpGet]
         [Route("read/{id?}")]
@@ -69,7 +68,7 @@ namespace capa_negocio.Controllers
 
         [HttpPatch]
         [Route("cambiarimagen/{id}")]
-        public async Task<ActionResult> CambiarEstado(int id, [FromBody] Dictionary<string, string> body)
+        public async Task<ActionResult> CambiarImagen(int id, [FromBody] Dictionary<string, string> body)
         {
             if (!body.ContainsKey("imagen"))
                 return BadRequest("Se necesita el campo imagen");
@@ -78,6 +77,21 @@ namespace capa_negocio.Controllers
                 var solicitud = new RestRequest($"usuarios/cambiarimagen/{id}", Method.Patch);
                 solicitud.AddJsonBody(body);
                 var respuesta = await Solicitudes.EjecutarSolicitud(solicitud);
+                return StatusCode((int)respuesta.StatusCode, respuesta.Content);
+            }
+            catch (Exception ex)
+            { return StatusCode(500, "Ocurrio un error en el servidor"); }
+        }
+
+        [HttpGet]
+        [Route("filtrar")]
+        public async Task<ActionResult> Filtrar()
+        {
+            try
+            {
+                var parametros = HttpContext.Request.QueryString.Value;
+                var solicutud = new RestRequest($"usuarios/filtrar{parametros}", Method.Get);
+                var respuesta = await Solicitudes.EjecutarSolicitud(solicutud);
                 return StatusCode((int)respuesta.StatusCode, respuesta.Content);
             }
             catch (Exception ex)

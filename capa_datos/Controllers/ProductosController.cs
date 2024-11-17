@@ -122,23 +122,21 @@ namespace capa_datos.Controllers
             }
         }
 
-        // PENDIENTE..........
         [HttpPatch]
         [Route("cambiarestado/{id}")]
-        public async Task<ActionResult> cambiarEstado(int id, [FromBody] Dictionary<string, int> body)
+        public async Task<ActionResult> cambiarEstado(int id)
         {
             int filasAfectadas = 0;
-            string consulta = "UPDATE FROM [Entidades].[PRODUCTO] SET idEstadoProducto = @idEstadoProducto " +
-                "WHERE idProducto = @id";
+            string consulta = "UPDATE [Entidades].[PRODUCTO] SET estadoProducto = ~estadoProducto" +
+                " WHERE idProducto = @id";
             try
             {
                 using (var comando = new SqlCommand(consulta))
                 {
                     comando.Parameters.AddWithValue("@id", id);
-                    comando.Parameters.AddWithValue("@iidEstadoProductod", (int)body["idEstadoProducto"]);
                     filasAfectadas = await Conexion.EjecutarCambios(comando);
                 }
-                return filasAfectadas == 0 ? StatusCode(200) : StatusCode(404);
+                return filasAfectadas == 1 ? StatusCode(200) : StatusCode(404);
             }
             catch (ArgumentException ex)
             { return BadRequest(ex.Message); }
@@ -223,32 +221,11 @@ namespace capa_datos.Controllers
                 catch (Exception ex)
                 { transaccion.Rollback(); return StatusCode(500, ex.Message); }
             }
-
-            //[HttpGet]
-            //[Route("filter")]
-            //public async Task<ActionResult> filter()
-            //{
-            //    var resultado = new List<Dictionary<string, object>>();
-            //    var parametros = ObtenerParametros(HttpContext.Request.Query);
-            //    string consulta = "SELECT idProducto FROM [Entidades].[PRODUCTO_CATEGORIA] WHERE";
-            //}
-
-            //private Dictionary<string, object> ObtenerParametros(IQueryCollection parametros)
-            //{
-            //    var resultado = new Dictionary<string, object>();
-
-            //    foreach (var item in parametros)
-            //    {
-            //        resultado.Add(item.Key, item.Value.ToString());
-            //    }
-
-            //    return resultado;
-            //}
         }
 
         [HttpGet]
-        [Route("filtro")]
-        public async Task<ActionResult> filtro([FromQuery] string nombre = "", [FromQuery] int[] categorias = null)
+        [Route("filtrar")]
+        public async Task<ActionResult> Filtrar([FromQuery] string nombre = "", [FromQuery] int[] categorias = null)
         {
             var resultado = new List<Dictionary<string, object>>();
             string consulta = "SELECT P.* FROM [Entidades].[PRODUCTO] AS P ";

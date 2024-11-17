@@ -63,7 +63,7 @@ namespace capa_datos.Controllers
             catch (ArgumentException ex)
             { return BadRequest(ex.Message); }
             catch (SqlException ex)
-            { return ex.Number == 547 ? Conflict(ex.Message) : StatusCode(500, ex.Message); }
+            { return ex.Number == 50000 ? Conflict(ex.Message) : StatusCode(500, ex.Message); }
             catch (Exception ex)
             { return StatusCode(500, ex.Message); }
         }

@@ -6,8 +6,20 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 Env.Load();
-
 builder.Configuration.AddEnvironmentVariables();
+
+var CLIENT_SERVER = builder.Configuration["CLIENT_SERVER"];
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAngularApp",
+        builder =>
+        {
+            builder.WithOrigins(CLIENT_SERVER) // Reemplaza con la URL de tu aplicación Angular
+                   .AllowAnyMethod()
+                   .AllowAnyHeader();
+        });
+});
 
 builder.Services.AddAuthentication(cfg =>
 {
@@ -32,11 +44,12 @@ builder.Services.AddAuthentication(cfg =>
         ClockSkew = TimeSpan.Zero
     };
 });
+
 builder.Services.AddControllers();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+app.UseCors("AllowAngularApp");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

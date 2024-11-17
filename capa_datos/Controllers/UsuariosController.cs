@@ -127,28 +127,57 @@ namespace capa_datos.Controllers
         }
 
         [HttpGet]
-        [Route("compras/{id}")]
-        public async Task<ActionResult> ConsultarPedidos(int id)
+        [Route("filtrar")]
+        public async Task<ActionResult> Filtrar([FromQuery] string filtro = "")
         {
-            var resultado = new List<Dictionary<string, object>>();
-            string consulta = "SELECT * FROM [Compras].[COMPRA] WHERE idUsuario = @id";
-
             try
             {
-                using (var comando = new SqlCommand(consulta))
+                var resultado = new List<Dictionary<string, object>>();
+                string consulta = @"SELECT U.idUsuario, U.nombre, U.apellidoUno, U.apellidoDos, U.correo, 
+                    U.telefono, U.fechaRegistro, U.imagen, U.estadoCuenta, D.provincia, D.canton, D.distrito, 
+                    D.barrio, D.direccionExacta FROM [Entidades].[USUARIO] U 
+                    JOIN [Entidades].[DIRECCION] D ON U.idUsuario = D.idUsuario 
+                    WHERE U.nombre + ' ' + U.apellidoUno + ' ' + U.apellidoDos LIKE @filtro 
+                    OR U.correo LIKE @filtro OR U.telefono LIKE @filtro";
+
+                using(var comando = new SqlCommand(consulta))
                 {
-                    comando.Parameters.AddWithValue("@id", id);
+                    comando.Parameters.AddWithValue("@filtro", $"%{filtro}%");
                     resultado = await Conexion.EjecutarConsulta(comando);
                 }
                 return resultado.Count > 0 ? Ok(resultado) : NoContent();
             }
-            catch(ArgumentException ex)
+            catch (ArgumentException ex)
             { return BadRequest(ex.Message); }
             catch (SqlException ex)
             { return StatusCode(500, ex.Message); }
             catch (Exception ex)
             { return StatusCode(500, ex.Message); }
         }
+
+        //[HttpGet]
+        //[Route("compras/{id}")]
+        //public async Task<ActionResult> ConsultarPedidos(int id)
+        //{
+        //    var resultado = new List<Dictionary<string, object>>();
+        //    string consulta = "SELECT * FROM [Compras].[COMPRA] WHERE idUsuario = @id";
+
+        //    try
+        //    {
+        //        using (var comando = new SqlCommand(consulta))
+        //        {
+        //            comando.Parameters.AddWithValue("@id", id);
+        //            resultado = await Conexion.EjecutarConsulta(comando);
+        //        }
+        //        return resultado.Count > 0 ? Ok(resultado) : NoContent();
+        //    }
+        //    catch(ArgumentException ex)
+        //    { return BadRequest(ex.Message); }
+        //    catch (SqlException ex)
+        //    { return StatusCode(500, ex.Message); }
+        //    catch (Exception ex)
+        //    { return StatusCode(500, ex.Message); }
+        //}
     }
 }
 
