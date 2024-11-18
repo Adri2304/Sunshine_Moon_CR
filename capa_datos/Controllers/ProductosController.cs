@@ -15,7 +15,6 @@ namespace capa_datos.Controllers
             this.Conexion = new Conexion(configuration);
         }
 
-        //El READ
         [HttpGet]
         [Route("read/{id?}")]
         public async Task<ActionResult> Read(int? id)

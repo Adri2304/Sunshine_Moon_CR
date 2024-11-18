@@ -97,5 +97,20 @@ namespace capa_negocio.Controllers
             catch (Exception ex)
             { return StatusCode(500, "Ocurrio un error en el servidor"); }
         }
+
+        [HttpPatch]
+        [Route("update/{id}")]
+        public async Task<ActionResult> Update(int id, [FromBody] UpdateUsuario body)
+        {
+            try
+            {
+                var solicitud = new RestRequest($"usuarios/update/{id}", Method.Patch);
+                solicitud.AddJsonBody(body);
+                var respuesta = await Solicitudes.EjecutarSolicitud(solicitud);
+                return StatusCode((int)respuesta.StatusCode, respuesta.Content);
+            }
+            catch
+            { return StatusCode(500, "Ocurrio un error en el servidor"); }
+        }
     }
 }

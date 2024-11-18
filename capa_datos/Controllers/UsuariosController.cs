@@ -2,6 +2,7 @@
 using capa_datos.Clases.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
+using System.Runtime.InteropServices;
 
 namespace capa_datos.Controllers
 {
@@ -155,29 +156,37 @@ namespace capa_datos.Controllers
             { return StatusCode(500, ex.Message); }
         }
 
-        //[HttpGet]
-        //[Route("compras/{id}")]
-        //public async Task<ActionResult> ConsultarPedidos(int id)
-        //{
-        //    var resultado = new List<Dictionary<string, object>>();
-        //    string consulta = "SELECT * FROM [Compras].[COMPRA] WHERE idUsuario = @id";
+        [HttpPatch]
+        [Route("update/{id}")]
+        public async Task<ActionResult> Update(int id, [FromBody] Dictionary<string, string> body)
+        {
+            try
+            {
+                int filasAfectadas = 0;
+                string consulta = "EXEC Procedimientos.ACTUALIZAR_USUARIO @id, ";
 
-        //    try
-        //    {
-        //        using (var comando = new SqlCommand(consulta))
-        //        {
-        //            comando.Parameters.AddWithValue("@id", id);
-        //            resultado = await Conexion.EjecutarConsulta(comando);
-        //        }
-        //        return resultado.Count > 0 ? Ok(resultado) : NoContent();
-        //    }
-        //    catch(ArgumentException ex)
-        //    { return BadRequest(ex.Message); }
-        //    catch (SqlException ex)
-        //    { return StatusCode(500, ex.Message); }
-        //    catch (Exception ex)
-        //    { return StatusCode(500, ex.Message); }
-        //}
+                foreach (var item in body)
+                {
+                    consulta += $"@{item.Key}, ";
+                }
+                consulta = consulta.Remove(consulta.Length - 2);
+
+                using (var comando = new SqlCommand(consulta))
+                {
+                    foreach (var item in body)
+                        comando.Parameters.AddWithValue($"@{item.Key}", item.Value);
+                    comando.Parameters.AddWithValue("@id", id);
+                    filasAfectadas = await Conexion.EjecutarCambios(comando);
+                }
+                return filasAfectadas == 2 ? Ok() : Conflict("El correo ya existe o no se encontro el usuario");
+            }
+            catch (ArgumentException ex)
+            { return BadRequest(ex.Message); }
+            catch (SqlException ex)
+            { return StatusCode(500, ex.Message); }
+            catch (Exception ex)
+            { return StatusCode(500, ex.Message); }
+        }
     }
 }
 
