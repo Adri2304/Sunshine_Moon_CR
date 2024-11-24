@@ -42,6 +42,8 @@ namespace capa_negocio.Controllers
         {
             try
             {
+                // Subir la imagen y obtener la URL
+
                 body.Contrasenia = BCrypt.Net.BCrypt.HashPassword(body.Contrasenia);
                 var solicitud = new RestRequest("usuarios/create", Method.Post);
                 solicitud.AddJsonBody(body);

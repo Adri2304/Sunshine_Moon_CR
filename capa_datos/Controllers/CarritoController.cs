@@ -57,7 +57,7 @@ namespace capa_datos.Controllers
                     comando.Parameters.AddWithValue("@idProducto", datos["idProducto"]);
                     comando.Parameters.AddWithValue("@cantidad", datos["cantidad"]);
                     filasAfectadas = await Conexion.EjecutarCambios(comando);
-                    return filasAfectadas > 0 ? StatusCode(201) : Conflict();
+                    return filasAfectadas > 0 ? Ok() : Conflict();
                 }
             }
             catch (ArgumentException ex)

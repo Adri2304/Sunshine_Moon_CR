@@ -46,6 +46,9 @@ namespace capa_negocio.Controllers
 
                     if (BCrypt.Net.BCrypt.Verify(body["contrasenia"], data[0]["contrasenia"].ToString()))
                     {
+                        if ("False".Equals(data[0]["estadoCuenta"].ToString()))
+                            return Conflict("Esta cuenta esta desactivada");
+
                         // Generar tokens
                         var tokens = GenerarTokens(data[0]["idUsuario"].ToString(), data[0]["idRol"].ToString(), body["correo"]);
                         // Guardar en la BD

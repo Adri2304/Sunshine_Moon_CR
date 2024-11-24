@@ -20,7 +20,7 @@ namespace capa_datos.Controllers
         public async Task<ActionResult> ConsultarCuenta([FromQuery] string correo)
         {
             var respuesta = new List<Dictionary<string, object>>();
-            string consulta = "SELECT idUsuario, idRol, correo, contrasenia FROM " +
+            string consulta = "SELECT idUsuario, idRol, correo, contrasenia, estadoCuenta FROM " +
                 "[Entidades].[USUARIO] WHERE correo = @correo";
             
             try

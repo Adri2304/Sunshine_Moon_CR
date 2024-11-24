@@ -4,6 +4,7 @@ using capa_negocio.Clases;
 using capa_negocio.Clases.Models;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace capa_negocio.Controllers
 {
@@ -63,7 +64,26 @@ namespace capa_negocio.Controllers
                 return BadRequest("Categoria de producto duplicada");
             try
             {
+                // Subir la imagen y obtener la URL
+
                 var solicitud = new RestRequest("productos/create", Method.Post);
+                solicitud.AddJsonBody(body);
+                var respuesta = await Solicitudes.EjecutarSolicitud(solicitud);
+                return StatusCode((int)respuesta.StatusCode, respuesta.Content);
+            }
+            catch (Exception ex)
+            { return StatusCode(500, "Ocurrio un error en el servidor"); }
+        }
+
+        [HttpPatch]
+        [Route("update/{id}")]
+        public async Task<ActionResult> Update([FromBody] Producto body, int id)
+        {
+            if (body.categorias.Length != body.categorias.Distinct().Count())
+                return BadRequest("Categoria de producto duplicada");
+            try
+            {
+                var solicitud = new RestRequest($"productos/update/{id}", Method.Patch);
                 solicitud.AddJsonBody(body);
                 var respuesta = await Solicitudes.EjecutarSolicitud(solicitud);
                 return StatusCode((int)respuesta.StatusCode, respuesta.Content);
@@ -93,7 +113,7 @@ namespace capa_negocio.Controllers
             try
             {
                 var parametros = HttpContext.Request.QueryString.Value;
-                var solicitud = new RestRequest($"productos/filtro{parametros}", Method.Get);
+                var solicitud = new RestRequest($"productos/filtrar{parametros}", Method.Get);
                 var respuesta = await Solicitudes.EjecutarSolicitud(solicitud);
 
                 if ((int)respuesta.StatusCode != 200)
