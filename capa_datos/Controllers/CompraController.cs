@@ -3,6 +3,7 @@ using capa_datos.Clases;
 using capa_datos.Clases.Models;
 using Microsoft.Data.SqlClient;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Mvc.Formatters;
 
 namespace capa_datos.Controllers
 {
@@ -19,7 +20,7 @@ namespace capa_datos.Controllers
 
         [HttpGet]
         [Route("read/{id?}")]
-        public async Task<ActionResult> read(int? id)
+        public async Task<ActionResult> Read(int? id)
         {
             try
             {
@@ -50,14 +51,43 @@ namespace capa_datos.Controllers
         }
 
         [HttpGet]
+        [Route("readcompra/{id}")]
+        public async Task<ActionResult> Read(int id)
+        {
+            try
+            {
+                var resultado = new List<Dictionary<string, object>>();
+                string consulta = @"SELECT C.idCompra, U.nombre + ' ' + U.apellidoUno + ' ' + U.apellidoDos AS cliente,
+                    U.correo, U.Telefono, EC.nombre AS estado, C.costoEnvio, C.subTotal, C.total, C.fechaCompra 
+                    FROM [Compras].[COMPRA] C JOIN [Entidades].[USUARIO] U ON C.idUsuario = U.idUsuario 
+                    JOIN [Entidades].[ESTADO_COMPRA] EC ON C.idEstadoCompra = EC.idEstadoCompra";
+
+                consulta += " WHERE C.idCompra = @id";
+
+                using (var comando = new SqlCommand(consulta))
+                {
+                    comando.Parameters.AddWithValue("@id", id);
+                    resultado = await Conexion.EjecutarConsulta(comando);
+                }
+                return resultado.Count > 0 ? Ok(resultado) : NoContent();
+            }
+            catch (ArgumentException ex)
+            { return BadRequest(ex.Message); }
+            catch (SqlException ex)
+            { return StatusCode(500, ex.Message); }
+            catch (Exception ex)
+            { return StatusCode(500, ex.Message); }
+        }
+
+        [HttpGet]
         [Route("detallecompra/{id}")]
         public async Task<ActionResult> DetalleCompra(int id)
         {
             try
             {
                 var resultado = new List<Dictionary<string, object>>();
-                string consulta = @"SELECT P.nombre,P.imagen,P.precio,CP.cantidad,
-	                CP.totalPrecio FROM [Compras].[COMPRA_PRODUCTO] CP JOIN [Entidades].[PRODUCTO] P
+                string consulta = @"SELECT P.nombre,CP.cantidad,P.precio,
+	                CP.totalPrecio,P.imagen FROM [Compras].[COMPRA_PRODUCTO] CP JOIN [Entidades].[PRODUCTO] P
                     ON CP.idProducto = P.idProducto WHERE CP.idCompra = @id";
 
                 using (var comando = new SqlCommand(consulta))
@@ -83,7 +113,7 @@ namespace capa_datos.Controllers
             {
                 string consulta = "EXEC Procedimientos.REGISTRAR_COMPRA @id, @tipoEntrega, @costoEnvio, @imagenFactura";
                 var data = body.DevolverDiccionario();
-                int filasAfectadas = 0;
+                var resultado = new List<Dictionary<string, object>>();
 
                 using (var comando = new SqlCommand(consulta))
                 {
@@ -91,10 +121,10 @@ namespace capa_datos.Controllers
                     comando.Parameters.AddWithValue("@tipoEntrega", data["tipoEntrega"]);
                     comando.Parameters.AddWithValue("@costoEnvio", data["costoEnvio"]);
                     comando.Parameters.AddWithValue("@imagenFactura", data["imagenFactura"]);
-                    filasAfectadas = await Conexion.EjecutarCambios(comando);
+                    resultado = await Conexion.EjecutarConsulta(comando);
                 }
 
-                return filasAfectadas >= 4 ? StatusCode(201, "La compra fue exitosa" + filasAfectadas) : Conflict("No se pudo realizar la compra" + filasAfectadas);
+                return resultado.Count > 0 ? StatusCode(201, resultado) : Conflict("No se pudo realizar la compra");
             }
             catch (ArgumentException ex)
             { return BadRequest(ex.Message); }

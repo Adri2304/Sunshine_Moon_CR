@@ -4,6 +4,7 @@ using capa_negocio.Clases.Models;
 using RestSharp;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
 
 namespace capa_negocio.Controllers
 {
@@ -18,6 +19,7 @@ namespace capa_negocio.Controllers
             this.Solicitudes = new Solicitudes(configuracion);
         }
 
+        //[Authorize(Roles = "1,2")]
         [HttpGet]
         [Route("read/{id?}")]
         public async Task<ActionResult> Read(int? id)

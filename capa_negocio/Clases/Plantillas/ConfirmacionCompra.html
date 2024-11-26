@@ -1,0 +1,105 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Confirmación de compra</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+
+        h1 {
+            color: #6A4C9C;
+            text-align: center;
+        }
+
+        p {
+            color: #555;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px 15px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #8A4DCA;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #f2e6ff;
+        }
+
+        strong {
+            color: #6A4C9C;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 14px;
+            color: #888;
+        }
+
+        .footer a {
+            color: #8A4DCA;
+            text-decoration: none;
+        }
+
+        .button {
+            background-color: #8A4DCA;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            border-radius: 5px;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 20px;
+        }
+
+            .button:hover {
+                background-color: #6A4C9C;
+            }
+    </style>
+</head>
+<body>
+    <h1>¡Gracias por tu compra, {{cliente}}!</h1>
+    <p>Tu pedido con el número de factura #{{idCompra}} ha sido confirmado.</p>
+    <p>Detalles de tu pedido:</p>
+    <table>
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio Unitario</th>
+                <th>Total</th>
+                <th>Imagen</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{detallesCompra}}
+        </tbody>
+    </table>
+    <p><strong>Subtotal:</strong> {{subTotal}}</p>
+    <p><strong>Costo envío:</strong> {{costoEnvio}}</p>
+    <p><strong>Total:</strong> {{total}}</p>
+    <p>¡Te estaremos informando del proceso de tu pedido!</p>
+    <p class="footer">Si tienes alguna pregunta, no dudes en <a href="https://www.instagram.com/sunshine_moon_cr?igsh=MXNib3Z6anM0amw0aQ==">contactarnos</a>.</p>
+</body>
+</html>

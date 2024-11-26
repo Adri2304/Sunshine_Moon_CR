@@ -1,4 +1,5 @@
 ﻿using capa_negocio.Clases;
+using capa_negocio.Clases.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using RestSharp;
 using System.Security.Cryptography.Xml;
@@ -11,20 +12,25 @@ namespace capa_negocio.Controllers
     public class CompraController : ControllerBase
     {
         private readonly Solicitudes Solicitudes;
+        private readonly Correos Correos;
 
         public CompraController(IConfiguration configuracion)
         {
             this.Solicitudes = new Solicitudes(configuracion);
+            this.Correos = new Correos(configuracion);
         }
 
         // LEER TODOS
         [HttpGet]
-        [Route("read/")]
-        public async Task<ActionResult> Read()
+        [Route("read/{id?}")]
+        public async Task<ActionResult> Read(int? id)
         {
             try
             {
-                var solicitud = new RestRequest("compras/read");
+                string endpoint = "compras/read";
+                if (id.HasValue)
+                    endpoint = $"compras/readcompra/{id}";
+                var solicitud = new RestRequest(endpoint, Method.Get);
                 var respuesta = await Solicitudes.EjecutarSolicitud(solicitud);
                 return StatusCode((int)respuesta.StatusCode, respuesta.Content);
             }
@@ -81,10 +87,23 @@ namespace capa_negocio.Controllers
                 var solicitud = new RestRequest("compras/create", Method.Post);
                 solicitud.AddJsonBody(body);
                 var respuesta = await Solicitudes.EjecutarSolicitud(solicitud);
+
+                if ((int)respuesta.StatusCode == 201)
+                {
+                    var data = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(respuesta.Content);
+
+                    _ = Task.Run(async () =>
+                    {
+                        await Correos.EnviarCorreo(data[0]["correo"].ToString(), data[0]["cliente"].ToString(),
+                            "Confirmación de Compra", 1, int.Parse(data[0]["idCompra"].ToString()));
+                    }); 
+
+                    return StatusCode((int)respuesta.StatusCode, "La compra se ha realizado correctamente");
+                }
                 return StatusCode((int)respuesta.StatusCode, respuesta.Content);
             }
             catch (Exception ex)
-            { return StatusCode(500, "Ocurrio un error en el servidor"); }
+            { return StatusCode(500, ex.Message); }
         }
 
         // DETALLE COMPRA

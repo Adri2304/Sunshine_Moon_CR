@@ -51,11 +51,13 @@ namespace capa_negocio.Controllers
 
                         // Generar tokens
                         var tokens = GenerarTokens(data[0]["idUsuario"].ToString(), data[0]["idRol"].ToString(), body["correo"]);
+
                         // Guardar en la BD
                         solicitud = new RestRequest($"autenticar/settoken/{data[0]["idUsuario"].ToString()}", Method.Patch);
                         response = await Solicitudes.EjecutarSolicitud(solicitud, new Dictionary<string, object>
                         {{ "refreshToken", tokens["refreshToken"] }});
 
+                        //return Ok(response.Content);
                         if ((int)response.StatusCode == 200)
                         {
                             tokens.Add("idUsuario", data[0]["idUsuario"].ToString());
@@ -130,7 +132,7 @@ namespace capa_negocio.Controllers
             var claims = new List<Claim> {
                 new Claim(ClaimTypes.NameIdentifier, id),
                 new Claim(ClaimTypes.Role, rol),
-                new Claim(ClaimTypes.Email, correo),
+                new Claim(ClaimTypes.Email, correo)
             };
 
             var jwtToken = new JwtSecurityToken(
