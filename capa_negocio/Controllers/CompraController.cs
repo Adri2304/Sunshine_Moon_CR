@@ -163,18 +163,18 @@ namespace capa_negocio.Controllers
                 solicitud.AddJsonBody(body);
                 var respuesta = await Solicitudes.EjecutarSolicitud(solicitud);
 
-                //if ((int)respuesta.StatusCode == 200)
-                //{
-                //    _ = Task.Run(async () =>
-                //    {
-                //        solicitud = new RestRequest($"compras/readCompra/{body["idCompra"]}", Method.Get);
-                //        respuesta = await Solicitudes.EjecutarSolicitud(solicitud);
-                //        var data = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(respuesta.Content);
+                if ((int)respuesta.StatusCode == 200)
+                {
+                    _ = Task.Run(async () =>
+                    {
+                        var _solicitud = new RestRequest($"compras/readcompra/{body["idCompra"]}", Method.Get);
+                        var _respuesta = await Solicitudes.EjecutarSolicitud(_solicitud);
+                        var data = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(_respuesta.Content);
 
-                //    });
-
-                //}
-                    
+                        _ = await Correos.EnviarCorreo(data[0]["correo"].ToString(), data[0]["cliente"].ToString(),
+                            "Cambio de estado del pedido", 2, int.Parse(data[0]["idCompra"].ToString()));
+                    });
+                }
                 return StatusCode((int)respuesta.StatusCode, respuesta.Content);
             }
             catch (Exception ex)

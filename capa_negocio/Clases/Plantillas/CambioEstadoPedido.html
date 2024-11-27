@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8" />
-    <title>Confirmación de compra</title>
+    <title>Actualización del estado de tu pedido</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -57,10 +57,10 @@
             color: #888;
         }
 
-        .footer a {
-            color: #8A4DCA;
-            text-decoration: none;
-        }
+            .footer a {
+                color: #8A4DCA;
+                text-decoration: none;
+            }
 
         .button {
             background-color: #8A4DCA;
@@ -73,34 +73,17 @@
             margin-top: 20px;
         }
 
-            .button:hover {
-                background-color: #6A4C9C;
-            }
+        .button:hover {
+            background-color: #6A4C9C;
+        }
     </style>
 </head>
 <body>
-    <h1>¡Gracias por tu compra, {{cliente}}!</h1>
-    <p>Tu pedido con el número de factura #{{idCompra}} ha sido confirmado.</p>
-    <p>Detalles de tu pedido:</p>
-    <table>
-        <thead>
-            <tr>
-                <th>Producto</th>
-                <th>Cantidad</th>
-                <th>Precio Unitario</th>
-                <th>Total</th>
-                <th>Imagen</th>
-            </tr>
-        </thead>
-        <tbody>
-            {{detallesCompra}}
-        </tbody>
-    </table>
-    <p><strong>Subtotal:</strong> {{subTotal}}</p>
-    <p><strong>Costo envío:</strong> {{costoEnvio}}</p>
-    <p><strong>Total:</strong> {{total}}</p>
-    <p>¡Te estaremos informando sobre el proceso de tu pedido!</p>
-    <p>¡Agradecemos tu preferencia! Si tienes alguna pregunta, no dudes en <a href="https://www.instagram.com/sunshine_moon_cr?igsh=MXNib3Z6anM0amw0aQ==">contactarnos</a>.</p>
+    <h1>¡Hola, {{cliente}}!</h1>
+    <p>Te informamos que el estado de tu pedido realizado el {{fecha}} a las {{hora}} horas con el 
+    número de factura #{{idCompra}} ha sido actualizado.</p>
+    <p>El nuevo estado de tu pedido es: <strong>{{estadoPedido}}</strong></p>
+    <p>¡Gracias por darnos la oportunidad de servirte! Si tienes alguna pregunta, no dudes en <a href="https://www.instagram.com/sunshine_moon_cr?igsh=MXNib3Z6anM0amw0aQ==">contactarnos</a>.</p>
     <p class="footer">Atentamente,<br />El equipo de Sunshine Moon CR</p>
 </body>
 </html>

@@ -72,7 +72,8 @@ namespace capa_negocio.Clases.Helpers
             string resultado = tipoMensaje switch
             {
                 1 => await ConfirmacionCompra(id),
-                2 => await CambioEstadoCompra(id)
+                2 => await CambioEstadoCompra(id),
+                _ => throw new Exception("No se pudo generar el mensaje")
             };
             return resultado;
         }
@@ -119,7 +120,29 @@ namespace capa_negocio.Clases.Helpers
 
         private async Task<string> CambioEstadoCompra(int id)
         {
-            return "";
+            try
+            {
+                string ruta = Path.Combine(Directory.GetCurrentDirectory(), "Clases", "Plantillas", "CambioEstadoPedido.html");
+                string mensaje = File.ReadAllText(ruta);
+
+                var _solicitud = new RestRequest($"compras/readcompra/{id}", Method.Get);
+                var _respuesta = await Solicitudes.EjecutarSolicitud(_solicitud);
+                var infoCompra = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(_respuesta.Content);
+
+                var fechaCompra = DateTime.Parse(infoCompra[0]["fechaCompra"].ToString());
+
+                mensaje = mensaje.Replace("{{cliente}}", infoCompra[0]["cliente"].ToString());
+                mensaje = mensaje.Replace("{{idCompra}}", infoCompra[0]["idCompra"].ToString());
+                mensaje = mensaje.Replace("{{fecha}}", fechaCompra.ToShortDateString());
+                mensaje = mensaje.Replace("{{hora}}", fechaCompra.ToShortTimeString());
+                mensaje = mensaje.Replace("{{estadoPedido}}", infoCompra[0]["estado"].ToString());
+
+                return mensaje;
+            }
+            catch (Exception)
+            {
+                throw new Exception("Fallo en el envio del correo");
+            }
         }
     }
 }
