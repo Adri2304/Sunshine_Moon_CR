@@ -2,7 +2,6 @@
 using capa_negocio.Clases.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using RestSharp;
-using System.Security.Cryptography.Xml;
 using System.Text.Json;
 
 namespace capa_negocio.Controllers
@@ -92,11 +91,8 @@ namespace capa_negocio.Controllers
                 {
                     var data = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(respuesta.Content);
 
-                    _ = Task.Run(async () =>
-                    {
-                        await Correos.EnviarCorreo(data[0]["correo"].ToString(), data[0]["cliente"].ToString(),
+                    _ = Correos.EnviarCorreo(data[0]["correo"].ToString(), data[0]["cliente"].ToString(),
                             "Confirmación de Compra", 1, int.Parse(data[0]["idCompra"].ToString()));
-                    }); 
 
                     return StatusCode((int)respuesta.StatusCode, "La compra se ha realizado correctamente");
                 }
@@ -166,6 +162,19 @@ namespace capa_negocio.Controllers
                 var solicitud = new RestRequest("compras/cambiarestado", Method.Patch);
                 solicitud.AddJsonBody(body);
                 var respuesta = await Solicitudes.EjecutarSolicitud(solicitud);
+
+                //if ((int)respuesta.StatusCode == 200)
+                //{
+                //    _ = Task.Run(async () =>
+                //    {
+                //        solicitud = new RestRequest($"compras/readCompra/{body["idCompra"]}", Method.Get);
+                //        respuesta = await Solicitudes.EjecutarSolicitud(solicitud);
+                //        var data = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(respuesta.Content);
+
+                //    });
+
+                //}
+                    
                 return StatusCode((int)respuesta.StatusCode, respuesta.Content);
             }
             catch (Exception ex)
