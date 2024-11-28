@@ -4,9 +4,11 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using RestSharp;
-using BCrypt;
 using System.Text.Json;
 using capa_negocio.Clases;
+using capa_negocio.Clases.Helpers;
+using Microsoft.Extensions.Caching.Memory;
+using System.Net.WebSockets;
 
 namespace capa_negocio.Controllers
 {
@@ -15,12 +17,17 @@ namespace capa_negocio.Controllers
     public class AuthController : ControllerBase
     {
         private readonly Solicitudes Solicitudes;
+        private readonly AuthDosPasos AuthDosPasos;
+        private readonly Correos Correos;
         private readonly string JwtSecret;
         private readonly string JwtIssuer;
         private readonly string JwtAudience;
-        public AuthController(IConfiguration configuracion)
+
+        public AuthController(IConfiguration configuracion, IMemoryCache memoriaCache)
         {
             this.Solicitudes = new Solicitudes(configuracion);
+            this.AuthDosPasos = new AuthDosPasos(memoriaCache);
+            this.Correos = new Correos(configuracion);
             this.JwtSecret = configuracion["JWT_SECRET"];
             this.JwtIssuer = configuracion["JWT_ISSUER"];
             this.JwtAudience = configuracion["JWT_AUDIENCE"];
@@ -123,6 +130,45 @@ namespace capa_negocio.Controllers
             catch (Exception ex)
             { return StatusCode(500, "Ocurrio un error en el servidor"); }
         }
+
+        //[HttpPost]
+        //[Route("generarcodigo")]
+        //public async Task<ActionResult> GenerarCodigo([FromBody] Dictionary<string, string> body)
+        //{
+        //    try
+        //    {
+        //        if (!body.ContainsKey("correo"))
+        //            return BadRequest("Se necesita el campo \"correo\"");
+
+        //        var codigo = await AuthDosPasos.GenerarCodigo(body["correo"]);
+        //        var mensaje = await Correos.GenerarMensajes(3, int.Parse(codigo));
+        //        _ = Correos.EnviarCorreo(body["correo"], "", "Verificacion de cuenta", mensaje);
+        //        return Ok();
+        //    }
+        //    catch
+        //    {
+        //        return StatusCode(500, "Ocurrio un error en el servidor");
+        //    }
+        //}
+
+        //[HttpPost]
+        //[Route("verificarCodigo")]
+        //public async Task<ActionResult> VerificarCodigo([FromBody] Dictionary<string, string> body)
+        //{
+        //    try
+        //    {
+        //        if (!body.ContainsKey("correo") || !body.ContainsKey("codigo"))
+        //            return BadRequest("Se necesita el campo \"correo\" y el campo \"codigo\"");
+
+        //        if (!await AuthDosPasos.VerificarCodigo(body["correo"], body["codigo"]))
+        //            return Conflict("El codigo ha expirado o no es el correcto");
+        //        return Ok();
+        //    }
+        //    catch
+        //    {
+        //        return StatusCode(500, "Ocurrio un error en el servidor");
+        //    }
+        //}
 
         private Dictionary<string, string> GenerarTokens(string id, string rol, string correo)
         {

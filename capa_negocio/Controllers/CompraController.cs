@@ -89,11 +89,13 @@ namespace capa_negocio.Controllers
 
                 if ((int)respuesta.StatusCode == 201)
                 {
-                    var data = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(respuesta.Content);
-
-                    _ = Correos.EnviarCorreo(data[0]["correo"].ToString(), data[0]["cliente"].ToString(),
-                            "Confirmación de Compra", 1, int.Parse(data[0]["idCompra"].ToString()));
-
+                    _ = Task.Run(async () =>
+                    {
+                        var data = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(respuesta.Content);
+                        var mensaje = await Correos.GenerarMensajes(1, int.Parse(data[0]["idCompra"].ToString()));
+                        _ = await Correos.EnviarCorreo(data[0]["correo"].ToString(), data[0]["cliente"].ToString(),
+                                "Confirmación de Compra", mensaje);
+                    });
                     return StatusCode((int)respuesta.StatusCode, "La compra se ha realizado correctamente");
                 }
                 return StatusCode((int)respuesta.StatusCode, respuesta.Content);
@@ -171,8 +173,9 @@ namespace capa_negocio.Controllers
                         var _respuesta = await Solicitudes.EjecutarSolicitud(_solicitud);
                         var data = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(_respuesta.Content);
 
+                        var mensaje = await Correos.GenerarMensajes(2, int.Parse(data[0]["idCompra"].ToString()));
                         _ = await Correos.EnviarCorreo(data[0]["correo"].ToString(), data[0]["cliente"].ToString(),
-                            "Cambio de estado del pedido", 2, int.Parse(data[0]["idCompra"].ToString()));
+                            "Cambio de estado del pedido", mensaje);
                     });
                 }
                 return StatusCode((int)respuesta.StatusCode, respuesta.Content);
@@ -194,6 +197,22 @@ namespace capa_negocio.Controllers
             }
             catch (Exception ex) 
             { return StatusCode(500, "Ocurrio un error en el servidor"); }
+        }
+
+        [HttpGet]
+        [Route("costoenvio/{id}")]
+        public async Task<ActionResult> CostoEnvio(int id)
+        {
+            try
+            {
+                var request = new RestRequest($"compras/costoenvio/{id}", Method.Get);
+                var response = await Solicitudes.EjecutarSolicitud(request);
+                return StatusCode((int)response.StatusCode, response.Content);
+            }
+            catch
+            {
+                return StatusCode(500, "Ocurrio un error en el servidor");
+            }
         }
     }
 }

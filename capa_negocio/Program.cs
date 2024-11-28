@@ -7,6 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 Env.Load();
 builder.Configuration.AddEnvironmentVariables();
+builder.Services.AddMemoryCache();
 
 var CLIENT_SERVER = builder.Configuration["CLIENT_SERVER"];
 

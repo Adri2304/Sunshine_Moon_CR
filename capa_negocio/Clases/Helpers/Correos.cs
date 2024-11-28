@@ -26,7 +26,7 @@ namespace capa_negocio.Clases.Helpers
             this.Solicitudes = new Solicitudes(configuracion);
         }
 
-        public async Task<bool> EnviarCorreo(string destinatario, string nombre, string encabezado, int tipoCorreo, int id, string imagen = "")
+        public async Task<bool> EnviarCorreo(string destinatario, string nombre, string encabezado, string mensaje, string imagen = "")
         {
             try
             {
@@ -35,7 +35,6 @@ namespace capa_negocio.Clases.Helpers
                 mail.To.Add(new MailboxAddress(nombre, destinatario));
                 mail.Subject = encabezado;
 
-                string mensaje = await GenerarMensajes(tipoCorreo, id);
                 var body = new BodyBuilder();
 
                 if (!string.IsNullOrEmpty(imagen))
@@ -67,12 +66,13 @@ namespace capa_negocio.Clases.Helpers
             { return false; }
         }
 
-        private async Task<string> GenerarMensajes(int tipoMensaje, int id)
+        public async Task<string> GenerarMensajes(int tipoMensaje, int id)
         {
             string resultado = tipoMensaje switch
             {
                 1 => await ConfirmacionCompra(id),
                 2 => await CambioEstadoCompra(id),
+                3 => await VerificacionDosPasos(id),
                 _ => throw new Exception("No se pudo generar el mensaje")
             };
             return resultado;
@@ -100,6 +100,13 @@ namespace capa_negocio.Clases.Helpers
                     tabla += $"<tr>";
                     foreach (var item in producto)
                     {
+                        if ("imagen".Equals(item.Key))
+                        {
+                            tabla += $"<td><a href=\"{item.Value.ToString()}\"><img src=\"{item.Value.ToString()}\" width=\"150px\" height=\"100px\"" +
+                                $" alt=\"No se pudo cargar la imagen\"/></a></td>";
+
+                            continue;
+                        }
                         tabla += $"<td>{item.Value.ToString()}</td>";
                     }
                     tabla += $"</tr>";
@@ -137,6 +144,21 @@ namespace capa_negocio.Clases.Helpers
                 mensaje = mensaje.Replace("{{hora}}", fechaCompra.ToShortTimeString());
                 mensaje = mensaje.Replace("{{estadoPedido}}", infoCompra[0]["estado"].ToString());
 
+                return mensaje;
+            }
+            catch (Exception)
+            {
+                throw new Exception("Fallo en el envio del correo");
+            }
+        }
+
+        private async Task<string> VerificacionDosPasos(int codigo)
+        {
+            try
+            {
+                string ruta = Path.Combine(Directory.GetCurrentDirectory(), "Clases", "Plantillas", "VerificacionDosPasos.html");
+                string mensaje = File.ReadAllText(ruta);
+                mensaje = mensaje.Replace("{{codigo}}", codigo.ToString());
                 return mensaje;
             }
             catch (Exception)
