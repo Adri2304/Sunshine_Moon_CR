@@ -5,6 +5,7 @@ using capa_negocio.Clases.Models;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using static System.Net.Mime.MediaTypeNames;
+using capa_negocio.Clases.Helpers;
 
 namespace capa_negocio.Controllers
 {
@@ -13,9 +14,11 @@ namespace capa_negocio.Controllers
     public class ProductosController : ControllerBase
     {
         private readonly Solicitudes Solicitudes;
+        private readonly Imagenes Imagenes;
         public ProductosController(IConfiguration configuracion)
         {
             this.Solicitudes = new Solicitudes(configuracion);
+            this.Imagenes = new Imagenes(configuracion);
         }
 
         [HttpGet]
@@ -64,8 +67,8 @@ namespace capa_negocio.Controllers
                 return BadRequest("Categoria de producto duplicada");
             try
             {
-                // Subir la imagen y obtener la URL
-
+                var imagenUrl = await Imagenes.SubirImagen(body.imagen);
+                body.imagen = imagenUrl;
                 var solicitud = new RestRequest("productos/create", Method.Post);
                 solicitud.AddJsonBody(body);
                 var respuesta = await Solicitudes.EjecutarSolicitud(solicitud);
@@ -83,6 +86,8 @@ namespace capa_negocio.Controllers
                 return BadRequest("Categoria de producto duplicada");
             try
             {
+                var imagenUrl = await Imagenes.SubirImagen(body.imagen);
+                body.imagen = imagenUrl;
                 var solicitud = new RestRequest($"productos/update/{id}", Method.Patch);
                 solicitud.AddJsonBody(body);
                 var respuesta = await Solicitudes.EjecutarSolicitud(solicitud);

@@ -23,11 +23,11 @@ namespace capa_negocio.Controllers
         private readonly string JwtIssuer;
         private readonly string JwtAudience;
 
-        public AuthController(IConfiguration configuracion, IMemoryCache memoriaCache)
+        public AuthController(IConfiguration configuracion, IMemoryCache memoriaCache, IWebHostEnvironment rutaRaiz)
         {
             this.Solicitudes = new Solicitudes(configuracion);
             this.AuthDosPasos = new AuthDosPasos(memoriaCache);
-            this.Correos = new Correos(configuracion);
+            this.Correos = new Correos(configuracion, rutaRaiz);
             this.JwtSecret = configuracion["JWT_SECRET"];
             this.JwtIssuer = configuracion["JWT_ISSUER"];
             this.JwtAudience = configuracion["JWT_AUDIENCE"];

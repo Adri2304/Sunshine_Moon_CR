@@ -11,12 +11,10 @@ namespace capa_negocio.Controllers
     [Route("carrito")]
     public class CarritoController : ControllerBase
     {
-        private readonly Correos Correos;
         private readonly Solicitudes Solicitudes;
 
         public CarritoController(IConfiguration configuracion)
         {
-            this.Correos = new Correos(configuracion);
             this.Solicitudes = new Solicitudes(configuracion);
         }
 
@@ -82,15 +80,6 @@ namespace capa_negocio.Controllers
             }
             catch (Exception ex)
             { return StatusCode(500, "Ocurrio un error en el servidor"); }
-        }
-
-        [HttpPost]
-        [Route("correo")]
-        public async Task<ActionResult> Correo([FromBody] Dictionary<string, string> body)
-        {
-            string ruta = Path.Combine(Directory.GetCurrentDirectory(), "Clases", "Plantillas", "ConfirmacionCompra.html");
-            string mensaje = System.IO.File.ReadAllText(ruta, Encoding.UTF8);
-            return Ok(mensaje);
         }
     }
 }

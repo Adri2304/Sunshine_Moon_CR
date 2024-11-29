@@ -12,11 +12,13 @@ namespace capa_negocio.Controllers
     {
         private readonly Solicitudes Solicitudes;
         private readonly Correos Correos;
+        private readonly Imagenes Imagenes;
 
-        public CompraController(IConfiguration configuracion)
+        public CompraController(IConfiguration configuracion, IWebHostEnvironment rutaRaiz)
         {
             this.Solicitudes = new Solicitudes(configuracion);
-            this.Correos = new Correos(configuracion);
+            this.Correos = new Correos(configuracion, rutaRaiz);
+            this.Imagenes = new Imagenes(configuracion);
         }
 
         // LEER TODOS
@@ -80,7 +82,9 @@ namespace capa_negocio.Controllers
                     costoEnvio = data[0]["costoEnvio"];
                 }
 
-                // Subir la imagen de la factura y obtener su URL
+                // Subir imagen
+                var imagenUrl = await Imagenes.SubirImagen(body["imagenFactura"].ToString());
+                body["imagenFactura"] = imagenUrl;
 
                 body.Add("costoEnvio", costoEnvio);
                 var solicitud = new RestRequest("compras/create", Method.Post);
@@ -96,7 +100,6 @@ namespace capa_negocio.Controllers
                         _ = await Correos.EnviarCorreo(data[0]["correo"].ToString(), data[0]["cliente"].ToString(),
                                 "Confirmación de Compra", mensaje);
                     });
-                    return StatusCode((int)respuesta.StatusCode, "La compra se ha realizado correctamente");
                 }
                 return StatusCode((int)respuesta.StatusCode, respuesta.Content);
             }

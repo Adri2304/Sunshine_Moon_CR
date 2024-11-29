@@ -15,8 +15,10 @@ namespace capa_negocio.Clases.Helpers
         private readonly string Contrasenia;
         private readonly string Nombre;
         private readonly Solicitudes Solicitudes;
+        private readonly IWebHostEnvironment RutaRaiz;
 
-        public Correos(IConfiguration configuracion)
+
+        public Correos(IConfiguration configuracion, IWebHostEnvironment rutaRaiz)
         {
             this.Servidor = configuracion["EMAIL_SERVER"];
             this.Puerto = int.Parse(configuracion["EMAIL_PORT"]);
@@ -24,6 +26,7 @@ namespace capa_negocio.Clases.Helpers
             this.Contrasenia = configuracion["EMAIL_PASSWORD"];
             this.Nombre = configuracion["EMAIL_SENDER_NAME"];
             this.Solicitudes = new Solicitudes(configuracion);
+            this.RutaRaiz = rutaRaiz;
         }
 
         public async Task<bool> EnviarCorreo(string destinatario, string nombre, string encabezado, string mensaje, string imagen = "")
@@ -83,7 +86,7 @@ namespace capa_negocio.Clases.Helpers
             try
             {
                 string tabla = "";
-                string ruta = Path.Combine(Directory.GetCurrentDirectory(), "Clases", "Plantillas", "ConfirmacionCompra.html");
+                string ruta = Path.Combine(RutaRaiz.ContentRootPath, "Clases", "Plantillas", "ConfirmacionCompra.html");
                 string mensaje = File.ReadAllText(ruta);
 
                 var solicitud = new RestRequest($"compras/readcompra/{id}", Method.Get);
@@ -129,7 +132,7 @@ namespace capa_negocio.Clases.Helpers
         {
             try
             {
-                string ruta = Path.Combine(Directory.GetCurrentDirectory(), "Clases", "Plantillas", "CambioEstadoPedido.html");
+                string ruta = Path.Combine(RutaRaiz.ContentRootPath, "Clases", "Plantillas", "CambioEstadoPedido.html");
                 string mensaje = File.ReadAllText(ruta);
 
                 var _solicitud = new RestRequest($"compras/readcompra/{id}", Method.Get);
@@ -156,7 +159,7 @@ namespace capa_negocio.Clases.Helpers
         {
             try
             {
-                string ruta = Path.Combine(Directory.GetCurrentDirectory(), "Clases", "Plantillas", "VerificacionDosPasos.html");
+                string ruta = Path.Combine(RutaRaiz.ContentRootPath, "Clases", "Plantillas", "VerificacionDosPasos.html");
                 string mensaje = File.ReadAllText(ruta);
                 mensaje = mensaje.Replace("{{codigo}}", codigo.ToString());
                 return mensaje;

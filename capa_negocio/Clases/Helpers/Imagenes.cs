@@ -1,67 +1,52 @@
 ﻿using RestSharp;
+using System.Text;
+using System;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.IO;
 using System.Text.Json;
-using System.Text.Json.Serialization;
+
 
 namespace capa_negocio.Clases.Helpers
 {
-    public static class Imagenes
+    public  class Imagenes
     {
-        private const string ImgBBApiUrl = "https://api.imgbb.com/1/upload";
-        private const string ApiKey = "TU_API_KEY"; // Reemplaza con tu API key de ImgBB
+        private readonly string Server;
+        private readonly string ApiKey; // Reemplaza con tu API key de ImgBB
 
-        public static async Task<string> SubirImagen(string base64Image)
+        public Imagenes(IConfiguration configuration)
+        {
+            this.Server = configuration["IMG_SERVER"];
+            this.ApiKey = configuration["IMG_API_KEY"];
+        }
+
+        public async Task<string> SubirImagen(string base64Image)
         {
             try
             {
-                var client = new RestClient(ImgBBApiUrl);
-                var request = new RestRequest("", Method.Post);
+                var client = new RestClient(Server);
 
-                // Agrega los parámetros necesarios
+                // Crea una solicitud POST
+                var request = new RestRequest("", Method.Post);
                 request.AddParameter("key", ApiKey);
                 request.AddParameter("image", base64Image);
 
-                // Realiza la solicitud
                 var response = await client.ExecuteAsync(request);
 
-                if (response.IsSuccessful)
-                {
-                    // Deserializar la respuesta JSON
-                    var jsonResponse = JsonSerializer.Deserialize<ImgBBResponse>(response.Content, new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    });
+                if ((int)response.StatusCode != 200)
+                    throw new Exception("No se pudo subir la imagen");
 
-                    return jsonResponse?.Data?.Url ?? throw new Exception("No se pudo obtener la URL de la imagen.");
-                }
-                else
-                {
-                    throw new Exception($"Error al subir la imagen: {response.StatusCode} - {response.Content}");
-                }
+                var jsonDocument = JsonDocument.Parse(response.Content);
+                var url = jsonDocument.RootElement.GetProperty("data").GetProperty("url").GetString();
+                return url;
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                throw new Exception("No se pudo subir la imagen: " + ex);
             }
         }
-    }
-    public class ImgBBResponse
-    {
-        [JsonPropertyName("data")]
-        public ImgBBData Data { get; set; }
-
-        [JsonPropertyName("status")]
-        public int Status { get; set; }
-
-        [JsonPropertyName("success")]
-        public bool Success { get; set; }
-    }
-
-    public class ImgBBData
-    {
-        [JsonPropertyName("url")]
-        public string Url { get; set; }
-
-        [JsonPropertyName("delete_url")]
-        public string DeleteUrl { get; set; }
     }
 }

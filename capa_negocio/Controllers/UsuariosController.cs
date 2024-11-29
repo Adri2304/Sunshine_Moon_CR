@@ -1,6 +1,7 @@
 ﻿using capa_negocio.Clases;
 using Microsoft.AspNetCore.Mvc;
 using capa_negocio.Clases.Models;
+using capa_negocio.Clases.Helpers;
 using RestSharp;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using System.Text.Json;
@@ -13,10 +14,12 @@ namespace capa_negocio.Controllers
     public class UsuariosController : ControllerBase
     {
         private readonly Solicitudes Solicitudes;
+        private readonly Imagenes Imagenes;
 
         public UsuariosController(IConfiguration configuracion)
         {
             this.Solicitudes = new Solicitudes(configuracion);
+            this.Imagenes = new Imagenes(configuracion);
         }
 
         //[Authorize(Roles = "1,2")]
@@ -78,6 +81,8 @@ namespace capa_negocio.Controllers
                 return BadRequest("Se necesita el campo imagen");
             try
             {
+                var imagenUrl = await Imagenes.SubirImagen(body["imagen"]);
+                body["imagen"] = imagenUrl;
                 var solicitud = new RestRequest($"usuarios/cambiarimagen/{id}", Method.Patch);
                 solicitud.AddJsonBody(body);
                 var respuesta = await Solicitudes.EjecutarSolicitud(solicitud);
@@ -116,5 +121,20 @@ namespace capa_negocio.Controllers
             catch
             { return StatusCode(500, "Ocurrio un error en el servidor"); }
         }
+
+        //[HttpPost]
+        //[Route("subirimagen")]
+        //public async Task<ActionResult> SubirImagen([FromBody] Dictionary<string, string> body)
+        //{
+        //    try
+        //    {
+        //        var resultado = await Imagenes.UploadImage(body["imagen"]);
+        //        return Ok(resultado);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, ex.Message);
+        //    }
+        //}
     }
 }
